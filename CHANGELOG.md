@@ -21,6 +21,11 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
 - **Manual:** how to reach Mainsail from outside the home network with a
   Cloudflare Tunnel behind a Cloudflare Access login, set up by hand;
   KlipperSnapmakerJ1 itself is not changed.
+- **Power loss recovery writes less:** in vase mode or with Z hop the Z
+  height changes on almost every move, and the recovery state was
+  written to the display's flash memory up to four times a second.  It
+  is now written at most every 2 seconds on a Z change (and still at
+  once when the power fails).
 
 ## v1.4.0 (2026-11-13)
 

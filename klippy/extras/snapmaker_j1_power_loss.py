@@ -12,6 +12,9 @@ CHECKPOINT_TIME = 0.250
 IDLE_CHECK_TIME = 1.
 CHECKPOINT_HISTORY = 64
 ABNORMAL_SIGNAL_TIME = 1.
+# Shortest time between two checkpoint saves on a Z change: in vase mode
+# or with Z hop, Z changes on almost every checkpoint
+MIN_SAVE_GAP = 2.
 
 # The J1 power supply reports a mains failure on a dedicated input.  The
 # remaining energy is enough to stop the machine, but not to finish the
@@ -40,6 +43,7 @@ class SnapmakerJ1PowerLoss:
         self.resuming = False
         self.checkpoints = []
         self.next_save_time = 0.
+        self.last_save_time = 0.
         self.last_saved_z = None
         self.pending = self._load()
         self.checkpoint_timer = None
@@ -211,7 +215,9 @@ class SnapmakerJ1PowerLoss:
         if executed is not None:
             z = executed['position'][2]
             layer_change = (self.last_saved_z is not None
-                            and abs(z - self.last_saved_z) > 0.0001)
+                            and abs(z - self.last_saved_z) > 0.0001
+                            and eventtime >= self.last_save_time
+                            + MIN_SAVE_GAP)
             interval_done = (self.save_interval
                              and eventtime >= self.next_save_time)
             if layer_change or interval_done or self.last_saved_z is None:
@@ -223,6 +229,7 @@ class SnapmakerJ1PowerLoss:
         state = dict(state)
         state['reason'] = reason
         self.pending = state
+        self.last_save_time = self.reactor.monotonic()
         self._write(state)
     def _sense_handler(self, eventtime, state):
         self.signal_state = state
