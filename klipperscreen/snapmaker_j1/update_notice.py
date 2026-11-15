@@ -104,13 +104,17 @@ class UpdateNotice:
 
     def _busy(self):
         # Not while printing, over another dialog or the dark screen saver
-        # (a touch to wake the display would answer the dialog)
+        # (a touch to wake the display would answer the dialog), and not
+        # while a heater is on: the update restarts Klipper, which shuts
+        # the main controller down when it heats
         screen = self.screen
         printer = screen.printer
         return (self.dialog is not None or screen.dialogs
                 or screen.state.updating or screen.screensaver.is_showing
                 or printer is None
-                or printer.state in ("printing", "paused"))
+                or printer.state in ("printing", "paused")
+                or any(printer.get_stat(h, "target")
+                       for h in ("extruder", "extruder1", "heater_bed")))
 
     def check(self):
         if self._busy():

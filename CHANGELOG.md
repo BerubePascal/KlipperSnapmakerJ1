@@ -77,6 +77,18 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
   switching the printer off right after a change no longer loses them.
 - **Main controller update:** a damaged request of the bootloader no
   longer ends `snapmaker_j1_flash.py` with a Python error.
+- **Duplication and mirror with a file for the right toolhead:** the
+  file heats with `M104 T1`, which heated only the right nozzle; the left
+  one, which leads in these modes, stayed cold and the print stopped
+  ("Extrude below minimum temp").  In these modes every tool now heats
+  both nozzles, and every part fan command sets both fans.
+- **Update notice:** it no longer offers an update while a heater is on
+  (the update restarts Klipper, which stops the main controller then).
+- **Return to the stock firmware:** a failure after the maintenance
+  system was requested no longer says "Nothing was changed".  A
+  non-update `.bin` file on the stick no longer stops the search for the
+  update package.  A test checks how often the power loss recovery
+  writes its state (`tests/test_power_loss.py`).
 
 ## v1.4.0 (2026-11-13)
 

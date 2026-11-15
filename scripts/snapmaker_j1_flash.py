@@ -83,6 +83,8 @@ def extract_mc_bin(data):
     if data[:len(FILE_FLAG)] == FILE_FLAG:
         return data
     count = data[UPDATE_TOC_COUNT_OFFSET] if len(data) > 75 else 0
+    if UPDATE_TOC_COUNT_OFFSET + 1 + 9 * count > len(data):
+        count = 0               # not an update package (a short other file)
     for i in range(count):
         entry, offset, length = struct.unpack_from(
             ">BII", data, UPDATE_TOC_COUNT_OFFSET + 1 + 9 * i)

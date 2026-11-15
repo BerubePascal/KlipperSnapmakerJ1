@@ -289,7 +289,7 @@ def check(package_path, verify=True):
 
 def restore(package_path):
     console = Console()
-    stopped = flashed = False
+    stopped = flashed = requested = False
     try:
         package, system = check(package_path)
         run(["systemctl", "stop"] + SERVICES)
@@ -310,6 +310,7 @@ def restore(package_path):
                      " Snapmaker system\n  from the USB stick.  Leave the"
                      " stick plugged in.\n")
         request_maintenance()
+        requested = True
         unmount_sticks()
         time.sleep(3)
         run(["systemctl", "reboot"])
@@ -317,7 +318,12 @@ def restore(package_path):
         # Any error: Klipper has to come back (the display is unchanged)
         traceback.print_exc()
         console.show("\n  ERROR: %s" % (e,))
-        console.show("  Nothing was changed on the display module.")
+        if requested:
+            console.show("  The display starts the maintenance system at the"
+                         " next power up;
+  leave the USB stick plugged in.")
+        else:
+            console.show("  Nothing was changed on the display module.")
         if flashed:
             # Klipper cannot connect to the stock firmware or to an
             # interrupted update
