@@ -60,13 +60,17 @@ class WifiIcon:
         GLib.timeout_add_seconds(POLL, self._update)
 
     def _sdbus_nm(self):
-        if self.nm is None and not self.nm_failed:
+        # Tried again at every update: NetworkManager may start after
+        # KlipperScreen (it waits for the WLAN firmware); logged once
+        if self.nm is None:
             try:
                 from ks_includes.sdbus_nm import SdbusNm
                 self.nm = SdbusNm(
                     lambda msg, *args: logging.info("WLAN: %s", msg))
             except Exception:
-                logging.exception("WLAN symbol: NetworkManager not available")
+                if not self.nm_failed:
+                    logging.exception(
+                        "WLAN symbol: NetworkManager not available")
                 self.nm_failed = True
         return self.nm
 
@@ -93,7 +97,7 @@ class WifiIcon:
             status = None
         if status is None:
             self.box.hide()
-            return not self.nm_failed
+            return True
         if status["ssid"]:
             parts = next(n for level, n in LEVELS if status["signal"] > level)
             shown = parts

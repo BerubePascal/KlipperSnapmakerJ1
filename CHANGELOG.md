@@ -89,6 +89,9 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
   non-update `.bin` file on the stick no longer stops the search for the
   update package.  A test checks how often the power loss recovery
   writes its state (`tests/test_power_loss.py`).
+- **WLAN symbol:** when the network started after the touch screen, the
+  symbol stayed hidden until the next restart; it now appears as soon as
+  the network is there.
 
 ## v1.4.0 (2026-11-13)
 
