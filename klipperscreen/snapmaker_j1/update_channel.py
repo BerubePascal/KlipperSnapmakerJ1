@@ -45,6 +45,10 @@ def enabled():
 
 def _write(on):
     tmp = ENTRY + ".tmp"
+    # Left over from an interrupted switch: a link there would make the
+    # write below change the repository's own entry
+    if os.path.lexists(tmp):
+        os.remove(tmp)
     if on:
         with open(tmp, "w") as f:
             f.write(RC_ENTRY)
