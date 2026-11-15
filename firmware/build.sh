@@ -26,6 +26,8 @@ OUT_DIR="$REPO_DIR/firmware/out"
 TESTED=$(awk '$1 == "klipper" {print $3 " (" $2 ")"}' \
     "$REPO_DIR/versions.conf")
 INSTALLED=$(git -C "$KLIPPER_DIR" describe --tags --always)
+# Read here: KLIPPER_DIR may be relative, and the build runs elsewhere
+INSTALLED_COMMIT=$(git -C "$KLIPPER_DIR" rev-parse HEAD)
 
 rm -rf "$OUT_DIR"
 mkdir -p "$OUT_DIR"
@@ -59,7 +61,7 @@ echo "Firmware for Klipper $INSTALLED in $OUT_DIR"
 echo "Install it with Klipper stopped:"
 echo "  ~/klippy-env/bin/python $REPO_DIR/scripts/snapmaker_j1_flash.py $OUT_DIR/mc.bin"
 # By commit: git describe abbreviates it to another length than versions.conf
-if [ "$(git -C "$KLIPPER_DIR" rev-parse HEAD)" != \
+if [ "$INSTALLED_COMMIT" != \
      "$(awk '$1 == "klipper" {print $2}' "$REPO_DIR/versions.conf")" ]; then
     echo "Note: this release is tested with Klipper $TESTED"
 fi
