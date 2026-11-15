@@ -320,8 +320,7 @@ def restore(package_path):
         console.show("\n  ERROR: %s" % (e,))
         if requested:
             console.show("  The display starts the maintenance system at the"
-                         " next power up;
-  leave the USB stick plugged in.")
+                         " next power up;\n  leave the USB stick plugged in.")
         else:
             console.show("  Nothing was changed on the display module.")
         if flashed:

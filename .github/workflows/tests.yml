@@ -14,6 +14,10 @@ jobs:
           python-version: "3.x"
       - run: pip install pyserial
       - run: python -m unittest discover tests -v
+      # Every script and module at least parses (most have no unit test)
+      - run: |
+          python -m compileall -q scripts klippy klipperscreen tests
+          for f in scripts/*.sh install.sh firmware/build.sh; do bash -n "$f"; done
       # The update manager pins of moonraker/KlipperSnapmakerJ1.conf
       - run: python scripts/snapmaker_j1_versions.py --check
 
