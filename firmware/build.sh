@@ -58,7 +58,8 @@ python3 "$REPO_DIR/scripts/snapmaker_j1_package.py" out/klipper.bin \
 echo "Firmware for Klipper $INSTALLED in $OUT_DIR"
 echo "Install it with Klipper stopped:"
 echo "  ~/klippy-env/bin/python $REPO_DIR/scripts/snapmaker_j1_flash.py $OUT_DIR/mc.bin"
-case "$TESTED" in
-    "$INSTALLED "*) ;;
-    *) echo "Note: this release is tested with Klipper $TESTED" ;;
-esac
+# By commit: git describe abbreviates it to another length than versions.conf
+if [ "$(git -C "$KLIPPER_DIR" rev-parse HEAD)" != \
+     "$(awk '$1 == "klipper" {print $2}' "$REPO_DIR/versions.conf")" ]; then
+    echo "Note: this release is tested with Klipper $TESTED"
+fi
