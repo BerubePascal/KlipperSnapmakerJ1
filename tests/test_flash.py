@@ -18,13 +18,21 @@ _spec = importlib.util.spec_from_file_location(
     "snapmaker_j1_flash", os.path.join(SCRIPTS, "snapmaker_j1_flash.py"))
 flash = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(flash)
+_spec = importlib.util.spec_from_file_location(
+    "snapmaker_j1_package", os.path.join(SCRIPTS, "snapmaker_j1_package.py"))
+package = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(package)
 
 APP_START = 0x08002800
 
 
-def make_image(app_start=APP_START):
+def make_app(app_start=APP_START):
     # Vector table: stack pointer in RAM, reset handler (thumb) in the app
-    app = struct.pack("<II", 0x20018000, app_start + 9) + bytes(range(200))
+    return struct.pack("<II", 0x20018000, app_start + 9) + bytes(range(200))
+
+
+def make_image(app_start=APP_START):
+    app = make_app(app_start)
     fields = [flash.FILE_FLAG, 1, flash.IMAGE_TYPE_MC, 0, 0, 0, b"V1.2.3",
               b"", 0, len(app), flash.checksum32(app), app_start, 0, 0]
     hdr = struct.pack(flash.HEADER_FORMAT, *(fields + [0]))
@@ -59,10 +67,21 @@ class ImageTest(unittest.TestCase):
         toc[flash.UPDATE_TOC_COUNT_OFFSET] = 1
         struct.pack_into(">BII", toc, flash.UPDATE_TOC_COUNT_OFFSET + 1,
                          flash.UPDATE_ENTRY_MC, len(toc), len(image))
-        package = bytes(toc) + image + b"display files"
-        self.assertEqual(flash.extract_mc_bin(package), image)
+        update_bin = bytes(toc) + image + b"display files"
+        self.assertEqual(flash.extract_mc_bin(update_bin), image)
         with self.assertRaises(flash.FlashError):
             flash.extract_mc_bin(bytes(100))
+
+    def test_build_passes_the_flash_checks(self):
+        # snapmaker_j1_package.py (firmware/build.sh) and the flash tool
+        # have their own copies of the header format and checksum
+        app = make_app(package.APP_START)
+        update_bin = package.build_update_bin(
+            package.build_mc_bin(app, "Klipper v1"), "Klipper v1")
+        image = flash.check_image(flash.extract_mc_bin(update_bin))
+        self.assertEqual(image["app"], app)
+        self.assertEqual(image["start"], package.APP_START)
+        self.assertEqual(image["version"], "Klipper v1")
 
 
 class FrameTest(unittest.TestCase):
