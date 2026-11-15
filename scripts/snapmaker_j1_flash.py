@@ -287,6 +287,8 @@ class Flasher:
     def handle(self, frame):
         # (the bootloader does not set the attribute of its answers)
         if frame.command_id == CMD_PACKAGE:
+            if len(frame.payload) < 6:
+                return None
             offset, max_len = struct.unpack_from("<IH", frame.payload)
             app = self.image['app']
             if offset >= len(app):

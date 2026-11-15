@@ -68,6 +68,16 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
   [Nimrasol/klipper](https://github.com/Nimrasol/klipper/tree/j1)
   (branch `j1`).  The firmware itself is unchanged.
 
+- **Z offset at the start of a calibration:** a Z offset that was not
+  saved (Z+/Z- during a print) stayed active after a calibration, so the
+  next print started that much too high or too low.  A calibration now
+  sets it back to 0 when it starts.  A test checks where Z 0 lies after
+  a calibration (`tests/test_z_origin.py`).
+- **Settings of the touch screen:** they are written in one step, so
+  switching the printer off right after a change no longer loses them.
+- **Main controller update:** a damaged request of the bootloader no
+  longer ends `snapmaker_j1_flash.py` with a Python error.
+
 ## v1.4.0 (2026-11-13)
 
 - **Elapsed time without pauses:** on the print page of the touch screen,

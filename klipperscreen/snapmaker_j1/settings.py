@@ -30,7 +30,9 @@ def save(name, value):
     settings[name] = value
     try:
         os.makedirs(os.path.dirname(SETTINGS_FILE), exist_ok=True)
-        with open(SETTINGS_FILE, "w") as f:
+        # Never a half written file when the printer is switched off
+        with open(SETTINGS_FILE + ".tmp", "w") as f:
             json.dump(settings, f)
+        os.replace(SETTINGS_FILE + ".tmp", SETTINGS_FILE)
     except OSError:
         logging.exception("Saving %s failed", SETTINGS_FILE)
