@@ -134,7 +134,8 @@ def build():
             _step(JOG, _("Calibrate Datum Point"),
                   _("Adjust the height until the calibration card has slight"
                     " resistance."),
-                  leave="SNAPMAKER_CAL_MOVE POINT=2 TOOL=0 KEEP_Z=1"),
+                  leave="SNAPMAKER_CAL_SET_ORIGIN\n"
+                        "SNAPMAKER_CAL_MOVE POINT=2 TOOL=0 KEEP_Z=1"),
             _step(INFO, _("Calibrate Left Point"),
                   _("Turn the front left wheel under the heated bed until the"
                     " calibration card has the same resistance at this"
@@ -144,7 +145,7 @@ def build():
                   _("Turn the front right wheel under the heated bed until"
                     " the calibration card has the same resistance at this"
                     " point."),
-                  leave="SNAPMAKER_CAL_END SAVE=0"),
+                  leave="SNAPMAKER_CAL_END SAVE=1"),
             success],
         'z_assist': [
             dict(remove_glass), loosen_screws, heat, clean,

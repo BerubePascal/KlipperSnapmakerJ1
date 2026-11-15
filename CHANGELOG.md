@@ -60,6 +60,9 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
   in the plate.  It now adds the plate thickness, as the assisted
   calibration does.  **If you used the manual Z offset calibration, run
   a Z offset calibration again before the next print.**
+- **Manual heated bed leveling (calibration card):** it now stores the
+  rear reference height as the Z origin, as the assisted leveling does
+  and as the manual describes; before, the origin stayed as it was.
 
 ## v1.4.0 (2026-11-13)
 
