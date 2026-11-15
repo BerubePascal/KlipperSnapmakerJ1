@@ -31,6 +31,9 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
   controller may no longer run Klipper and how to go on, instead of
   only "Nothing was changed".  The boot menu of the display is replaced
   in one step, so it can no longer be left half written.
+- **Z offset saved during a print:** it is stored when the print ends;
+  this could happen in the middle of the end of print commands.  It now
+  waits until they are done.
 
 ## v1.4.0 (2026-11-13)
 

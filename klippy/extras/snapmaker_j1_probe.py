@@ -994,13 +994,18 @@ class SnapmakerJ1Probe:
         eventtime = self.printer.get_reactor().monotonic()
         return stats.get_status(eventtime)['state'] in ('printing', 'paused')
     def _check_z_offset_pending(self, eventtime):
-        if self.pending_z_offset is not None and not self._printing():
-            offset, self.pending_z_offset = self.pending_z_offset, None
-            gcode = self.printer.lookup_object('gcode')
-            try:
-                self._apply_z_offset(gcode, offset)
-            except self.printer.command_error as e:
-                gcode.respond_info("Z offset not stored: %s" % (e,))
+        if self.pending_z_offset is None or self._printing():
+            return eventtime + 1.
+        gcode = self.printer.lookup_object('gcode')
+        # Not in the middle of a command (the end of print macro starts at
+        # the same time): it moves the toolhead and changes the Z frame
+        with gcode.get_mutex():
+            if self.pending_z_offset is not None and not self._printing():
+                offset, self.pending_z_offset = self.pending_z_offset, None
+                try:
+                    self._apply_z_offset(gcode, offset)
+                except self.printer.command_error as e:
+                    gcode.respond_info("Z offset not stored: %s" % (e,))
         return eventtime + 1.
     def _apply_z_offset(self, gcode, offset):
         # The offset moves the nozzle up: the origin moves up as well
