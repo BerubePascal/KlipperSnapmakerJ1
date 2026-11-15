@@ -63,6 +63,10 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
 - **Manual heated bed leveling (calibration card):** it now stores the
   rear reference height as the Z origin, as the assisted leveling does
   and as the manual describes; before, the origin stayed as it was.
+- **Main controller firmware:** every change now builds the firmware
+  from the patch and checks that the patch matches the commits of
+  [Nimrasol/klipper](https://github.com/Nimrasol/klipper/tree/j1)
+  (branch `j1`).  The firmware itself is unchanged.
 
 ## v1.4.0 (2026-11-13)
 

@@ -16,3 +16,27 @@ jobs:
       - run: python -m unittest discover tests -v
       # The update manager pins of moonraker/KlipperSnapmakerJ1.conf
       - run: python scripts/snapmaker_j1_versions.py --check
+
+  # Builds the main controller firmware from the patch and checks that the
+  # patch matches the commits of Nimrasol/klipper (branch j1)
+  firmware:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi
+      - name: Klipper at the commit of versions.conf
+        run: |
+          pin=$(awk '$1 == "klipper" {print $2}' versions.conf)
+          git init -q ../klipper
+          git -C ../klipper fetch -q --depth 1 \
+              https://github.com/Klipper3d/klipper.git "$pin"
+          git -C ../klipper checkout -q FETCH_HEAD
+      - run: KLIPPER_DIR=../klipper firmware/build.sh
+      - name: Patch matches Nimrasol/klipper j1
+        run: |
+          pin=$(awk '$1 == "klipper" {print $2}' versions.conf)
+          git -C ../klipper fetch -q --depth 1 \
+              https://github.com/Nimrasol/klipper.git j1
+          diff <(git -C ../klipper diff "$pin" FETCH_HEAD -- src \
+                     | grep -v '^index ') \
+               <(grep -v '^index ' firmware/klipper-gd32f305-snapmaker.patch)
