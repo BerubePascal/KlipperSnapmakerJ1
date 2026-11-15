@@ -47,10 +47,8 @@ THEME = "snapmaker-j1"
 NAMES = {"extruder": "Left Nozzle", "extruder1": "Right Nozzle",
          "filament_sensor_t0": "Left Filament",
          "filament_sensor_t1": "Right Filament"}
-# Print mode of the J1 (macro state) and its names on the print page
+# Print mode of the J1 (macro state), shown on the print page
 STATE_MACRO = "gcode_macro _SNAPMAKER_STATE"
-PRINT_MODES = {"FULL_CONTROL": "IDEX", "DUPLICATION": "Duplication",
-               "MIRROR": "Mirror", "BACKUP": "Backup"}
 # Electronics fan (temperature_fan, hidden elsewhere by its underscore)
 BOARD_FAN = "temperature_fan _board_fan"
 # KlipperScreen lists only Klipper's own filament sensor types
@@ -592,7 +590,7 @@ def _patch_job_status(panel_class):
             except (KeyError, TypeError):
                 return
             mode = state.get("print_mode", "")
-            label = PRINT_MODES.get(mode, mode.replace("_", " ").title())
+            label = print_mode.pf.MODE_NAMES.get(mode, mode.replace("_", " ").title())
             if mode == "BACKUP" and state.get("backup_swapped"):
                 label = _("Backup, right")
             button = self.buttons.get("snapmaker_mode")
