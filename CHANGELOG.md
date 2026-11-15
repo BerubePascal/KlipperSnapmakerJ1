@@ -45,6 +45,11 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
   prepares a moved copy while a print is running.  Tests of the print
   file checks and of the main controller image checks run on every
   change (`python -m unittest discover tests`).
+- **Backup mode after a filament runout:** the other toolhead went on
+  printing 2 mm above the print until the next layer.  It now continues
+  where the first one stopped, at the height of the layer.  A tool
+  change also brings the bed back to the print height itself, instead
+  of leaving that to the next Z move of the file.
 
 ## v1.4.0 (2026-11-13)
 
