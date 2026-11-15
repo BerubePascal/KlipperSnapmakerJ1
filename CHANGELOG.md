@@ -40,6 +40,11 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
 - **Main controller update:** when the serial port is lost while the
   image is written (for example a USB adapter), `snapmaker_j1_flash.py`
   now says to run it again, instead of ending with a Python error.
+- **Print mode:** the touch screen and the web dialog start a print in
+  another IDEX mode by the same rule; the touch screen no longer
+  prepares a moved copy while a print is running.  Tests of the print
+  file checks and of the main controller image checks run on every
+  change (`python -m unittest discover tests`).
 
 ## v1.4.0 (2026-11-13)
 
