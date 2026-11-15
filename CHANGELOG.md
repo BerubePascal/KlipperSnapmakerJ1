@@ -34,6 +34,9 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
 - **Z offset saved during a print:** it is stored when the print ends;
   this could happen in the middle of the end of print commands.  It now
   waits until they are done.
+- **Prints one after the other (job queue):** the cleanup at the end of
+  a print (heaters off, carriages parked) could run at the start of the
+  next print.  It is now skipped once the next print has started.
 
 ## v1.4.0 (2026-11-13)
 
