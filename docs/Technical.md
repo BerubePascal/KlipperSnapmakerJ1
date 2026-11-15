@@ -89,9 +89,15 @@ stopped:
 
 The factory bootloader checks the image and writes only the application
 pages; an interrupted update is completed by running the script again,
-and a stock `mc.bin` returns to the stock firmware.  Rebuild and install
-the firmware when a Klipper update changes the protocol to the main
-controller.
+and a stock `mc.bin` returns to the stock firmware.  When a Klipper
+update changes the protocol to the main controller, Klipper stops with
+"Protocol error"; the error page of the touch screen then offers
+**Update Firmware**, which runs `scripts/snapmaker_j1_mcu_update.sh`:
+it stops Klipper, builds and installs the firmware for the installed
+Klipper and starts Klipper again (log:
+`printer_data/logs/snapmaker_j1_mcu_update.log`).  The same button
+appears when Klipper cannot connect to the controller at all, for
+example with the stock firmware still on it.
 
 ## Updates
 

@@ -17,7 +17,7 @@ from ks_includes.printer import Printer
 from ks_includes.screen_panel import ScreenPanel
 
 from . import (calibration, chooser, datetime_panel, filament, hostname,
-               light, pause, print_mode, service, stock, style,
+               light, mcu_update, pause, print_mode, service, stock, style,
                update_channel, update_notice, web_panel, webcam, wifi)
 
 # Install as KlipperScreen/addons/snapmaker_j1 (enable_addons: True) and
@@ -338,6 +338,10 @@ def _shutdown_page(screen, panel):
         show_restart_buttons = panel.show_restart_buttons
         restart = screen.gtk.Button("refresh", _("Restart"), "color1")
         restart.connect("clicked", panel.firmware_restart)
+        # Klipper and the main controller do not talk: firmware update
+        firmware = screen.gtk.Button("refresh", _("Update Firmware"),
+                                     "color3")
+        firmware.connect("clicked", lambda w: mcu_update.ask(screen))
 
         def _update_text(text):
             panel.labels["text"].set_use_markup(False)
@@ -350,6 +354,9 @@ def _shutdown_page(screen, panel):
                 return
             panel.clear_action_bar()
             panel.labels["actions"].add(restart)
+            message = screen.printer.get_stat("webhooks", "state_message")
+            if mcu_update.needed(message or ""):
+                panel.labels["actions"].add(firmware)
             panel.labels["actions"].add(panel.labels["menu"])
             panel.labels["actions"].show_all()
 

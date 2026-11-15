@@ -762,6 +762,12 @@ stopped** with the reason and two buttons:
 
 - **Restart:** restarts the firmware.  Use it once the cause is fixed.
 - **Menu:** opens the menu.
+- **Update Firmware** (only when the reason is "Protocol error" or
+  "Unable to connect"): Klipper and the main controller do not
+  understand each other, for example after a Klipper update.  It builds
+  the firmware of the main controller for the installed Klipper and
+  installs it (a minute or two; do not switch the printer off), then
+  Klipper starts again.
 
 ### Heater protection
 

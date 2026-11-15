@@ -92,6 +92,11 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
 - **WLAN symbol:** when the network started after the touch screen, the
   symbol stayed hidden until the next restart; it now appears as soon as
   the network is there.
+- **Main controller firmware from the touch screen:** when Klipper stops
+  with "Protocol error" (after a Klipper update) or cannot connect to the
+  main controller, the error page offers **Update Firmware**: it builds
+  the firmware for the installed Klipper and installs it, then Klipper
+  starts again.  Before, this needed SSH.
 
 ## v1.4.0 (2026-11-13)
 
