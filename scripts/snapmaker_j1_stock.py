@@ -251,8 +251,12 @@ def request_maintenance():
         lines = open(path).read().splitlines()
         lines = ["default %s" % (MAINT_LABEL,) if l.startswith("default ")
                  else l for l in lines]
-        with open(path, "w") as f:
+        # The boot menu of the display: never a half written file
+        with open(path + ".tmp", "w") as f:
             f.write("\n".join(lines) + "\n")
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(path + ".tmp", path)
         run(["sync"])
 
 def flash_main_controller(console, package):
@@ -285,7 +289,7 @@ def check(package_path, verify=True):
 
 def restore(package_path):
     console = Console()
-    stopped = False
+    stopped = flashed = False
     try:
         package, system = check(package_path)
         run(["systemctl", "stop"] + SERVICES)
@@ -299,6 +303,8 @@ def restore(package_path):
                      " itself.\n")
         console.show("  Main controller firmware %s"
                      % (package["mc_version"],))
+        # From here on the main controller may have been changed
+        flashed = True
         flash_main_controller(console, package["path"])
         console.show("  Starting the maintenance system: it writes the"
                      " Snapmaker system\n  from the USB stick.  Leave the"
@@ -312,6 +318,12 @@ def restore(package_path):
         traceback.print_exc()
         console.show("\n  ERROR: %s" % (e,))
         console.show("  Nothing was changed on the display module.")
+        if flashed:
+            # Klipper cannot connect to the stock firmware or to an
+            # interrupted update
+            console.show("  The main controller may no longer run Klipper:"
+                         " start the restore again,\n  or flash Klipper's"
+                         " mc.bin with snapmaker_j1_flash.py.")
         unmount_sticks()
         if stopped:
             console.show("  Klipper starts again in 30 seconds.")

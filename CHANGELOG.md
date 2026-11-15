@@ -26,6 +26,11 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
   written to the display's flash memory up to four times a second.  It
   is now written at most every 2 seconds on a Z change (and still at
   once when the power fails).
+- **Return to the stock firmware:** when the restore fails after the main
+  controller update has started, the display now says that the main
+  controller may no longer run Klipper and how to go on, instead of
+  only "Nothing was changed".  The boot menu of the display is replaced
+  in one step, so it can no longer be left half written.
 
 ## v1.4.0 (2026-11-13)
 
