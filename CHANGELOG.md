@@ -50,6 +50,10 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
   where the first one stopped, at the height of the layer.  A tool
   change also brings the bed back to the print height itself, instead
   of leaving that to the next Z move of the file.
+- **End of the XY calibration:** the right carriage parked at its endstop
+  from before the calibration.  When the new one is smaller, this could
+  stop the end with "Move out of range" before the heaters were
+  switched off.  It now parks at the newly stored endstop.
 
 ## v1.4.0 (2026-11-13)
 
