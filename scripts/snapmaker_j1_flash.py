@@ -309,15 +309,18 @@ class Flasher:
         # The bootloader erases the old application first, then requests
         # the image piece by piece and reports the result
         end = time.time() + timeout
-        while time.time() < end:
-            for frame in self.receive():
-                result = self.handle(frame)
-                if result is not None:
-                    return result
-                end = time.time() + timeout
-        raise FlashError(
-            "The bootloader stopped requesting data.  The main controller"
-            " waits in its bootloader; run this script again.")
+        try:
+            while time.time() < end:
+                for frame in self.receive():
+                    result = self.handle(frame)
+                    if result is not None:
+                        return result
+                    end = time.time() + timeout
+            reason = "The bootloader stopped requesting data"
+        except (serial.SerialException, OSError) as e:
+            reason = "The port was lost (%s)" % (e,)
+        raise FlashError("%s.  The main controller waits in its bootloader;"
+                         " run this script again." % (reason,))
 
 def open_port(device, baud):
     try:

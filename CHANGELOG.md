@@ -37,6 +37,9 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
 - **Prints one after the other (job queue):** the cleanup at the end of
   a print (heaters off, carriages parked) could run at the start of the
   next print.  It is now skipped once the next print has started.
+- **Main controller update:** when the serial port is lost while the
+  image is written (for example a USB adapter), `snapmaker_j1_flash.py`
+  now says to run it again, instead of ending with a Python error.
 
 ## v1.4.0 (2026-11-13)
 
