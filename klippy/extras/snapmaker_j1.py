@@ -848,15 +848,14 @@ class SnapmakerJ1:
         if reason:
             raise gcmd.error(reason)
         self.pm['info'] = None
-        if mode == info['mode']:
-            self.gcode.run_script_from_command(
-                'SDCARD_PRINT_FILE FILENAME="%s"' % (filename,))
+        plan = pf.start_plan(info, mode)
+        if plan is None:
+            self.gcode.run_script_from_command(pf.print_command(filename))
             return
-        offset = pf.x_offset(info, mode)
-        if not offset or info['layer_pos'] is None:
+        offset, needs_copy = plan
+        if not needs_copy:
             self.gcode.run_script_from_command(
-                'SDCARD_PRINT_FILE FILENAME="%s" MODE=%s X_OFFSET=%.2f'
-                % (filename, mode, offset))
+                pf.print_command(filename, mode, offset))
             return
         # The model moves from its first layer on: a copy of the file
         gcmd.respond_info("Preparing the print...")
@@ -865,9 +864,7 @@ class SnapmakerJ1:
             if copy is None:
                 raise self.printer.command_error(
                     "The print could not be prepared")
-            self.gcode.run_script(
-                'SDCARD_PRINT_FILE FILENAME="%s" MODE=%s X_OFFSET=0'
-                % (copy, mode))
+            self.gcode.run_script(pf.print_command(copy, mode))
         self._pm_thread(lambda: pf.make_copy(filename, info['layer_pos'],
                                              offset, gcodes), done)
 

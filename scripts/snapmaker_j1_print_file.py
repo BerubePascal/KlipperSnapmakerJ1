@@ -260,9 +260,22 @@ def x_offset(info, mode):
     return 0.
 
 
-def retraction_too_long(info):
-    return any(r is not None and r > MAX_RETRACTION
-               for r in info["retraction"])
+def start_plan(info, mode):
+    """How the file prints in this mode: None as the file is,
+    (offset, False) moved as a whole, (offset, True) moved from its first
+    layer on, which needs a copy of the file (make_copy)"""
+    if mode == info["mode"]:
+        return None
+    offset = x_offset(info, mode)
+    return offset, bool(offset) and info["layer_pos"] is not None
+
+
+def print_command(filename, mode=None, offset=0.):
+    """SDCARD_PRINT_FILE of the J1 macros for a file, in a mode"""
+    cmd = 'SDCARD_PRINT_FILE FILENAME="%s"' % (filename,)
+    if mode:
+        cmd += " MODE=%s X_OFFSET=%.2f" % (mode, offset)
+    return cmd
 
 
 def make_copy(filename, layer_pos, offset, gcodes=None):

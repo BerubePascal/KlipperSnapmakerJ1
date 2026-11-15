@@ -150,18 +150,23 @@ def _response(dialog, response_id, panel, filename, state):
 
 def _start(panel, filename, state):
     info, mode = state["info"], state["mode"]
-    if info is None or mode is None or mode == info["mode"]:
+    plan = None if info is None or mode is None else pf.start_plan(info, mode)
+    if plan is None:
         logging.info("Starting print: %s", filename)
         panel._screen._ws.api.print_start(filename)
         return
-    offset = pf.x_offset(info, mode)
-    if not offset or info["layer_pos"] is None:
+    offset, needs_copy = plan
+    if not needs_copy:
         # Moved as a whole (or not at all)
         logging.info("Starting print: %s in mode %s, X offset %.2f",
                      filename, mode, offset)
         panel._screen._ws.api.gcode_script(
-            'SDCARD_PRINT_FILE FILENAME="%s" MODE=%s X_OFFSET=%.2f'
-            % (filename, mode, offset))
+            pf.print_command(filename, mode, offset))
+        return
+    # make_copy replaces the previous copy, which may be printing
+    if panel._printer.get_stat("print_stats", "state") in ("printing",
+                                                           "paused"):
+        panel._screen.show_popup_message(_("Not possible while printing"))
         return
     # The model moves from the first layer on: a copy of the file with
     # the offset there (takes a moment for a large file)
@@ -174,9 +179,7 @@ def _start(panel, filename, state):
             return False
         logging.info("Starting print: %s in mode %s, X offset %.2f from"
                      " the first layer (%s)", filename, mode, offset, copy)
-        panel._screen._ws.api.gcode_script(
-            'SDCARD_PRINT_FILE FILENAME="%s" MODE=%s X_OFFSET=0'
-            % (copy, mode))
+        panel._screen._ws.api.gcode_script(pf.print_command(copy, mode))
         return False
 
     def work():
