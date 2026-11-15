@@ -1137,8 +1137,12 @@ class SnapmakerJ1Probe:
     def cmd_SNAPMAKER_CAL_SET_ORIGIN(self, gcmd):
         self._check_session()
         toolhead = self.printer.lookup_object('toolhead')
-        self.pending_z = toolhead.get_position()[2]
-        gcmd.respond_info("New Z origin at current Z=%.3f" % (self.pending_z,))
+        # The nozzle is on the bare bed; the print surface is the bed
+        # surface plus the plate thickness (as SNAPMAKER_CAL_DATUM)
+        z = toolhead.get_position()[2]
+        self.pending_z = z + self.plate_thickness
+        gcmd.respond_info("New Z origin: bed at Z=%.3f + plate %.2f mm"
+                          % (z, self.plate_thickness))
     cmd_SNAPMAKER_CAL_XY_help = (
         "Measure the XY offset of the right nozzle (build plate removed)")
     def cmd_SNAPMAKER_CAL_XY(self, gcmd):

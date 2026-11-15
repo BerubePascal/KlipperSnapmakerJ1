@@ -54,6 +54,12 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
   from before the calibration.  When the new one is smaller, this could
   stop the end with "Move out of range" before the heaters were
   switched off.  It now parks at the newly stored endstop.
+- **Manual Z offset calibration (calibration card):** it set the Z
+  origin on the bare bed and left out the thickness of the build plate,
+  so with the plate back on the first layer started about 5 mm too low,
+  in the plate.  It now adds the plate thickness, as the assisted
+  calibration does.  **If you used the manual Z offset calibration, run
+  a Z offset calibration again before the next print.**
 
 ## v1.4.0 (2026-11-13)
 
