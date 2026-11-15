@@ -63,12 +63,11 @@ MAX_RETRACTION = 2.
 # fit the dialog of Mainsail without scrolling
 PM_FILES = 6
 
-def load_print_file():
-    spec = importlib.util.spec_from_file_location('snapmaker_j1_print_file',
-                                                  PRINT_FILE)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+# Loaded once: Klipper restarts after an update of this repository
+_spec = importlib.util.spec_from_file_location('snapmaker_j1_print_file',
+                                               PRINT_FILE)
+pf = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(pf)
 
 # One automatic adjustment per Klipper process (kept over restarts), so a
 # reading that changes between starts cannot make Klipper restart again
@@ -703,7 +702,7 @@ class SnapmakerJ1:
         retraction = [None, None]
         try:
             sdcard = self.printer.lookup_object('virtual_sdcard')
-            retraction = load_print_file().quick_check(os.path.join(
+            retraction = pf.quick_check(os.path.join(
                 sdcard.sdcard_dirname, filename.lstrip('/')))['retraction']
         except (IOError, OSError):
             logging.exception("Reading the retraction of %s", filename)
@@ -779,7 +778,6 @@ class SnapmakerJ1:
             self.gcode.respond_raw("// action:" + line)
     def cmd_SNAPMAKER_PRINT_MODE_DIALOG(self, gcmd):
         self._pm_check_idle(gcmd)
-        pf = load_print_file()
         filename = gcmd.get('FILENAME', '').strip().lstrip('/')
         if not filename:
             # First the file: a page of the files, the newest first (the
@@ -853,7 +851,6 @@ class SnapmakerJ1:
     def cmd_SNAPMAKER_PRINT_MODE_START(self, gcmd):
         self._pm_prompt(["prompt_end"])
         self._pm_check_idle(gcmd)
-        pf = load_print_file()
         filename, info = self.pm['filename'], self.pm['info']
         mode = gcmd.get('MODE').upper()
         if info is None or mode not in pf.MODES:
