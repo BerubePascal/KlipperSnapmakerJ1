@@ -55,10 +55,6 @@ stallguard_pin_stepper_z: !PE3
 # the touch screen (plain Python, loaded by its path in the repository)
 PRINT_FILE = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                           '..', '..', 'scripts', 'snapmaker_j1_print_file.py')
-MODE_NAMES = {'FULL_CONTROL': 'IDEX', 'BACKUP': 'Backup',
-              'DUPLICATION': 'Duplication', 'MIRROR': 'Mirror'}
-# Retraction distance above which a print asks first (stock)
-MAX_RETRACTION = 2.
 # Files per page of SNAPMAKER_PRINT_MODE (the newest first); more do not
 # fit the dialog of Mainsail without scrolling
 PM_FILES = 6
@@ -99,14 +95,6 @@ SENSOR_OVER_TIME = 1.
 # ("nozzle_0_diameter(mm): 0.4") and Cura ("EXTRUDER_TRAIN.0.NOZZLE.DIAMETER")
 FILE_NOZZLE_KEYS = ['Extruder %d Nozzle Size', 'nozzle_%d_diameter(mm)',
                     'nozzle_%d_diameter', 'EXTRUDER_TRAIN.%d.NOZZLE.DIAMETER']
-
-# Values of the ";Extruder Mode:" header line written by the J1 slicer
-# profiles, mapped to the print modes of the J1 macros
-FILE_MODES = {
-    'Default': 'FULL_CONTROL', 'Normal': 'FULL_CONTROL',
-    'IDEX Full Control': 'FULL_CONTROL', 'IDEX Duplication': 'DUPLICATION',
-    'IDEX Mirror': 'MIRROR', 'IDEX Backup': 'BACKUP',
-}
 
 class AnalogInput:
     def __init__(self, config, name, pin):
@@ -673,7 +661,7 @@ class SnapmakerJ1:
         mode = None
         for line in header:
             if line.startswith(';Extruder Mode:'):
-                mode = FILE_MODES.get(line.split(':', 1)[1].strip())
+                mode = pf.HEADER_MODES.get(line.split(':', 1)[1].strip())
                 break
         if mode is None:
             return
@@ -707,7 +695,7 @@ class SnapmakerJ1:
         except (IOError, OSError):
             logging.exception("Reading the retraction of %s", filename)
         too_long = [r for r in retraction
-                    if r is not None and r > MAX_RETRACTION]
+                    if r is not None and r > pf.MAX_RETRACTION]
         # The print mode chosen on the touch screen, for the print after
         # the dialog
         mode = gcmd.get('MODE', None)
@@ -826,18 +814,18 @@ class SnapmakerJ1:
             self.pm.update(filename=filename, info=info)
             lines = ["prompt_begin Print Mode",
                      "prompt_text %s - mode of the file: %s"
-                     % (filename, MODE_NAMES[info['mode']])]
+                     % (filename, pf.MODE_NAMES[info['mode']])]
             buttons = []
             for mode in pf.MODES:
                 reason = pf.check_mode(info, mode)
                 if reason:
                     lines.append("prompt_text %s: %s"
-                                 % (MODE_NAMES[mode], reason))
+                                 % (pf.MODE_NAMES[mode], reason))
                     continue
                 style = 'primary' if mode == info['mode'] else 'secondary'
                 buttons.append(
                     "prompt_button %s|_SNAPMAKER_PRINT_MODE_START MODE=%s|%s"
-                    % (MODE_NAMES[mode], mode, style))
+                    % (pf.MODE_NAMES[mode], mode, style))
             lines += ["prompt_button_group_start"] + buttons + [
                 "prompt_button_group_end",
                 "prompt_footer_button Other File|_SNAPMAKER_PRINT_MODE_DIALOG",

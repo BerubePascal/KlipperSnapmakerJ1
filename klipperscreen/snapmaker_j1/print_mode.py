@@ -28,12 +28,6 @@ GCODES = pf.GCODES
 MODES = pf.MODES
 
 
-MODE_NAMES = {
-    "FULL_CONTROL": "IDEX", "BACKUP": "Backup",
-    "DUPLICATION": "Duplication", "MIRROR": "Mirror",
-}
-
-
 def patch_gcodes(screen, panel_class):
     # The print dialog with the mode buttons; the rest as KlipperScreen's
     # own (panels/gcodes.py)
@@ -62,7 +56,7 @@ def patch_gcodes(screen, panel_class):
         state = {"info": None, "mode": None, "buttons": {}}
         mode_box = Gtk.Box(spacing=5, hexpand=True)
         for mode in MODES:
-            b = self._gtk.Button(None, _(MODE_NAMES[mode]), "color3")
+            b = self._gtk.Button(None, _(pf.MODE_NAMES[mode]), "color3")
             b.set_vexpand(False)
             b.set_sensitive(False)
             b.connect("clicked", _pick_mode, self, state, mode)

@@ -51,6 +51,9 @@ HEADER_MODES = {
     "IDEX Full Control": "FULL_CONTROL", "IDEX Backup": "BACKUP",
     "IDEX Duplication": "DUPLICATION", "IDEX Mirror": "MIRROR",
 }
+# Names of the modes in the dialogs
+MODE_NAMES = {"FULL_CONTROL": "IDEX", "BACKUP": "Backup",
+              "DUPLICATION": "Duplication", "MIRROR": "Mirror"}
 M605_MODES = {0: "FULL_CONTROL", 1: "FULL_CONTROL", 2: "DUPLICATION",
               3: "MIRROR", 4: "BACKUP"}
 
