@@ -135,10 +135,10 @@ index a30bb621..871724e1 100644
  struct cline lookup_clock_line(uint32_t periph_base);
 diff --git a/src/stm32/snapmaker_boot.c b/src/stm32/snapmaker_boot.c
 new file mode 100644
-index 00000000..33c3d082
+index 00000000..7079829e
 --- /dev/null
 +++ b/src/stm32/snapmaker_boot.c
-@@ -0,0 +1,118 @@
+@@ -0,0 +1,119 @@
 +// Support for the Snapmaker J1 (gd32f305) factory bootloader
 +//
 +// Copyright (C) 2026  Nimrasol
@@ -174,7 +174,8 @@ index 00000000..33c3d082
 +#define FMC_CTL1  (*(volatile uint32_t *)(FLASH_R_BASE + 0x50))
 +#define FMC_ADDR1 (*(volatile uint32_t *)(FLASH_R_BASE + 0x54))
 +
-+// Checksum used by the bootloader (inverted sum of big-endian words)
++// Checksum used by the bootloader (inverted sum of big-endian words,
++// stored little-endian in the header)
 +static uint32_t
 +snapmaker_checksum(const uint8_t *buf, uint32_t len)
 +{
