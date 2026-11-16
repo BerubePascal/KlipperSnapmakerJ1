@@ -60,17 +60,21 @@ def package_info(path):
     # Official update package: header size, name, then the table of
     # contents with the main controller image (entry 0) and the application
     # (entry 3)
+    # The name first: any other .bin on the stick (eg a dump of several
+    # GB) is not read into memory
     with open(path, "rb") as f:
+        name = f.read(PACKAGE_NAME_OFFSET + PACKAGE_NAME_SIZE)
+        name = name[PACKAGE_NAME_OFFSET:].split(b"\0")[0].decode(
+            "ascii", "replace")
+        if not name.startswith("J1_V"):
+            raise RestoreError("%s is not a Snapmaker J1 update package"
+                               % (os.path.basename(path),))
+        f.seek(0)
         data = f.read()
     try:
         image = flash.check_image(flash.extract_mc_bin(data))
     except flash.FlashError as e:
         raise RestoreError("%s: %s" % (os.path.basename(path), e))
-    name = data[PACKAGE_NAME_OFFSET:PACKAGE_NAME_OFFSET + PACKAGE_NAME_SIZE]
-    name = name.split(b"\0")[0].decode("ascii", "replace")
-    if not name.startswith("J1_V"):
-        raise RestoreError("%s is not a Snapmaker J1 update package"
-                           % (os.path.basename(path),))
     return {"path": path, "name": name, "mc_version": image["version"]}
 
 def partition_size(label):

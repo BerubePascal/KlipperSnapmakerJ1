@@ -158,11 +158,10 @@ class UpdateNotice:
         self.dialog = None
         # Asked once per release, whatever the answer
         settings.save(NOTIFIED, remote)
-        if response_id != Gtk.ResponseType.OK:
+        # Checked again: a print or heating may have started meanwhile
+        if response_id != Gtk.ResponseType.OK or self._busy():
             return
         screen = self.screen
-        if screen.state.updating:
-            return
         # As the update panel does it: its progress dialog, then the update
         screen.base_panel.show_update_dialog()
         screen._notification_handler.handle(

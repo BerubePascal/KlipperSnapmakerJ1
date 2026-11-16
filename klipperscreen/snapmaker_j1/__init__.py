@@ -166,8 +166,11 @@ def init(screen):
                     "gcode_macro _SNAPMAKER_STATE"]["runout_tool"]
             except (KeyError, TypeError):
                 tool = -1
-            if tool not in (0, 1) or screen.snapmaker_calibration_print:
-                state_paused()
+            if tool not in (0, 1):
+                # The calibration page has its own Resume (KlipperScreen
+                # would put its extrude panel over it)
+                if not screen.snapmaker_calibration_print:
+                    state_paused()
                 return
             screen.state_printing()
             screen.show_panel(FILAMENT_PANEL, _("Filament"))
@@ -182,6 +185,9 @@ def init(screen):
     # Klipper's instructions
     def _stopped(state_handler):
         def _state():
+            # A calibration print ends here too: the flag would keep the
+            # main menu from coming back once Klipper is ready again
+            screen.snapmaker_calibration_print = False
             state_handler()
             panel = screen.panels.get("splash_screen")
             if panel is not None:
@@ -190,6 +196,13 @@ def init(screen):
 
     screen.state_shutdown = _stopped(screen.state_shutdown)
     screen.state_error = _stopped(screen.state_error)
+    state_disconnected = screen.state_disconnected
+
+    def _state_disconnected():
+        screen.snapmaker_calibration_print = False
+        state_disconnected()
+
+    screen.state_disconnected = _state_disconnected
 
     # The J1 is switched off with its power switch and loses no data when
     # the power is cut (power loss recovery); the shutdown button of the

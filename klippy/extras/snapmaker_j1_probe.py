@@ -442,6 +442,8 @@ class SnapmakerJ1Probe:
                     'CAL_SET_ORIGIN', 'CAL_XY', 'CAL_NOZZLE_OFFSET',
                     'CAL_FINISH']:
             func = getattr(self, 'cmd_SNAPMAKER_' + cmd)
+            if cmd in ('CAL_DATUM', 'CAL_HEIGHT', 'CAL_XY'):
+                func = self._ending_session_on_error(func)
             gcode.register_command('SNAPMAKER_' + cmd, func,
                                    desc=getattr(self, 'cmd_SNAPMAKER_'
                                                 + cmd + '_help'))
@@ -1063,6 +1065,17 @@ class SnapmakerJ1Probe:
             low -= CAL_Z_EXTRA
         kin = self.printer.lookup_object('toolhead').get_kinematics()
         kin.update_limits(2, (low, high))
+    def _ending_session_on_error(self, func):
+        # A failed measurement stops the macro before its CAL_END: the
+        # session's extra Z travel below the bed must not stay allowed
+        def cmd(gcmd):
+            try:
+                func(gcmd)
+            except self.printer.command_error:
+                self._reset_calibration()
+                self._set_power(False)
+                raise
+        return cmd
     def _reset_calibration(self):
         if getattr(self, 'cal_active', False):
             self._session_z_limits(False)

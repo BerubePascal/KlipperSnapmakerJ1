@@ -89,6 +89,25 @@ class PrintFileTest(unittest.TestCase):
         # Center of the whole file (0 to 140) to 80
         self.assertEqual(pf.start_plan(info, "DUPLICATION"), (10., False))
 
+    def test_cura_raft_moves_with_the_model(self):
+        # Raft layers are numbered below 0: they start the moved part
+        raft = FILE.replace(b";LAYER_CHANGE\n", b";LAYER:-1\n")
+        info = pf.analyze(self.write(raft))
+        self.assertTrue(raft[info["layer_pos"]:].startswith(b";LAYER:-1"))
+
+    def test_arcs_block_mode_moves(self):
+        arcs = FILE + b"G2 X150 Y100 I-60 J0 E2\n"
+        info = pf.analyze(self.write(arcs))
+        self.assertIn("could not be read", pf.check_mode(info, "DUPLICATION"))
+        self.assertEqual(pf.x_offset(info, "DUPLICATION"), 0.)
+
+    def test_dual_file_in_the_other_dual_mode_is_centered(self):
+        dup = b";Extruder Mode: IDEX Duplication\n" + FILE
+        info = pf.analyze(self.write(dup))
+        # Model center 120 to the mirror center 75
+        self.assertEqual(pf.x_offset(info, "MIRROR"), -45.)
+        self.assertIsNone(pf.start_plan(info, "DUPLICATION"))
+
     def test_too_wide_and_dual_extrusion(self):
         wide = FILE.replace(b"G1 X140 Y100 E1.0", b"G1 X300 Y100 E1.0")
         info = pf.analyze(self.write(wide))

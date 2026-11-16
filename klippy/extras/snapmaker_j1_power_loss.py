@@ -181,6 +181,10 @@ class SnapmakerJ1PowerLoss:
             return done[-1]
         return None
     def _checkpoint_event(self, eventtime):
+        # After a shutdown (also the power loss one) the moves stopped: a
+        # checkpoint now would replace the power loss state
+        if self.printer.is_shutdown():
+            return self.reactor.NEVER
         if not self._is_printing(eventtime):
             if not self.print_seen:
                 # Other activity (eg homing before a recovery) must not
@@ -198,6 +202,13 @@ class SnapmakerJ1PowerLoss:
                 self._remove()
             return eventtime + IDLE_CHECK_TIME
         self.print_seen = True
+        # Not in the middle of a macro (a tool change between parking and
+        # activating the new extruder): its file line would be skipped on
+        # resume with the old extruder active
+        # (lookup_objects also returns the gcode_macro module itself)
+        if any(getattr(m, 'in_script', False) for n, m in
+               self.printer.lookup_objects('gcode_macro')):
+            return eventtime + CHECKPOINT_TIME
         state = self._snapshot(eventtime)
         toolhead = self.printer.lookup_object('toolhead')
         last_move = toolhead.lookahead.get_last()
@@ -281,10 +292,12 @@ class SnapmakerJ1PowerLoss:
         # Restore the machine state, then continue from the stored offset
         context = self.resume_gcode.create_template_context()
         context['state'] = state
-        self.resume_gcode.run_gcode_from_command(context)
         relpath = os.path.relpath(path, sdcard_dir)
         self.resuming = True
         try:
+            # It heats first; a failure after that (eg homing) must not
+            # leave the heaters on
+            self.resume_gcode.run_gcode_from_command(context)
             # Not M23: it only finds files in the top folder, and a print
             # may be in a subfolder (the moved copy of a print mode)
             sdcard._reset_file()

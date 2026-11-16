@@ -21,7 +21,9 @@ def make(save_interval=30.):
     p.reactor = types.SimpleNamespace(monotonic=lambda: clock.now)
     toolhead = types.SimpleNamespace(
         print_time=0., lookahead=types.SimpleNamespace(get_last=lambda: None))
-    p.printer = types.SimpleNamespace(lookup_object=lambda name: toolhead)
+    p.printer = types.SimpleNamespace(lookup_object=lambda name: toolhead,
+                                      lookup_objects=lambda module: [],
+                                      is_shutdown=lambda: False)
     p.save_interval = save_interval
     p.print_seen = False
     p.checkpoints = []

@@ -591,7 +591,19 @@ class Panel(ScreenPanel):
                     % (item["key"], switch.get_active()))
         self._show_detail()
 
+    def deactivate(self):
+        # Home leaves the page without back(): no endless touching (and so
+        # no idle timeout) while the page is not shown
+        self.live_running = False
+
     def activate(self):
+        if (self.flow is not None and self.flow[self.index]["kind"] == F.LIVE
+                and not self.live_running):
+            self.live_running = True
+            # A measurement still running continues the loop when it ends
+            if not self.pending:
+                self._live_measure()
+
         # Restore the assist mode choices stored in Klipper and the build
         # plate thickness in use
         def got(result, method, params, *args):
@@ -793,6 +805,9 @@ class Panel(ScreenPanel):
             self._advance()
 
     def _wait_live_done(self):
+        # Quit meanwhile (or a new flow started): not for this step
+        if self.flow is None or self.flow[self.index]["kind"] != F.LIVE:
+            return False
         if self.pending:
             return True
         self._next(None)

@@ -107,10 +107,15 @@ class Panel(ScreenPanel):
             self.restore.set_sensitive(True)
         return False
 
-    def _ask(self, widget):
+    def _busy(self):
         state = self._printer.get_stat("print_stats", "state")
         if state in BUSY_STATES:
             self._screen.show_popup_message(_("Not possible while printing."))
+            return True
+        return False
+
+    def _ask(self, widget):
+        if self._busy():
             return
         buttons = [
             {"name": _("Restore"), "response": Gtk.ResponseType.OK,
@@ -133,7 +138,9 @@ class Panel(ScreenPanel):
 
     def _response(self, dialog, response_id):
         self._gtk.remove_dialog(dialog)
-        if response_id != Gtk.ResponseType.OK or not self.package:
+        # Again: a print may have started from the web while it was open
+        if (response_id != Gtk.ResponseType.OK or not self.package
+                or self._busy()):
             return
         logging.info("Restoring the stock firmware from %s",
                      self.package["path"])

@@ -97,6 +97,35 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
   main controller, the error page offers **Update Firmware**: it builds
   the firmware for the installed Klipper and installs it, then Klipper
   starts again.  Before, this needed SSH.
+- **Right nozzle Y offset:** a second print on the right nozzle in a row
+  printed without its calibrated Y offset (the end of the first print
+  had set it back and `T1` changed nothing).  Every tool command now
+  sets the offset of its nozzle.
+- **Print mode, Cura raft:** the raft (Cura's layers below 0) stayed in
+  place while the model moved for another mode; the raft now moves with
+  it.  A file printed in mirror mode that was made for duplication (or
+  the other way round) is now centered for its mode.  Files with arcs
+  (G2/G3, "arc fitting") cannot be moved to another mode: their width is
+  not known.
+- **PID calibration during a print:** with a cold heater it was accepted
+  and moved the carriages; it is now refused during a print.
+- **Calibration:** a measurement that fails ends the calibration
+  session, so the extra Z travel below the bed is not allowed afterwards.
+  Leaving the live height measurement with Home stops the touching until
+  the page is shown again.  After a stop during a calibration print the
+  touch screen comes back to the main menu; pausing a calibration print
+  no longer opens the extrude page.
+- **Power loss recovery:** the state is no longer stored in the middle of
+  a macro (a tool change could resume with the wrong nozzle), nor after
+  the power loss shutdown.  A failing recovery switches the heaters off.
+- **Pressure advance (`M900`):** without T it sets the active extruder
+  (both in duplication and mirror mode), as Marlin.
+- **Park Nozzles, service moves:** after parking, the active carriage
+  matches the active extruder again; with a positive Z offset the service
+  moves no longer stop with "Move out of range".
+- **Update and stock firmware dialogs** check again when confirmed that
+  no print runs; a large other `.bin` file on the stick is no longer
+  read into memory.
 
 ## v1.4.0 (2026-11-13)
 

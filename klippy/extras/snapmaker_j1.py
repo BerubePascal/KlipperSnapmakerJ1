@@ -478,15 +478,19 @@ class SnapmakerJ1:
         except self.printer.config_error as e:
             raise gcmd.error(str(e))
         eventtime = self.reactor.monotonic()
+        # Never in a print, also with a cold heater: the calibration moves
+        # the carriages and holds the G-code queue for minutes
+        state = self.printer.lookup_object('print_stats').get_status(
+            eventtime)['state']
+        if state in ('printing', 'paused'):
+            raise gcmd.error("Not possible while printing")
         if not heater.get_status(eventtime)['target']:
             return heater
         # Changing the control switches the heater off.  A calibration
         # takes over a heater that is only heated (KlipperScreen's PID
         # button sits next to the target temperature, which is usually
-        # set first), but never in a print
-        state = self.printer.lookup_object('print_stats').get_status(
-            eventtime)['state']
-        if not calibrate or state in ('printing', 'paused'):
+        # set first)
+        if not calibrate:
             raise gcmd.error("Heater %s is in use" % (heater.get_name(),))
         return heater
     def _handle_pid_abort(self, web_request):

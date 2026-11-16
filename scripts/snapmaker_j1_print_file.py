@@ -76,7 +76,10 @@ TAIL_SIZE = 128 << 10
 MOVE = re.compile(rb"\nG[01][ \t][^\n;]*?X(-?[0-9]*\.?[0-9]+)([^\n;]*)")
 TOOL = re.compile(rb"\nT([01])\b")
 M605 = re.compile(rb"\nM605[ \t][^\n;]*?S([0-9])")
-LAYER = re.compile(rb"\n;(?:LAYER_CHANGE|LAYER:0)\b")
+# The first layer mark: Cura numbers raft layers below 0 (;LAYER:-2)
+LAYER = re.compile(rb"\n;(?:LAYER_CHANGE|LAYER:-?[0-9]+)\b")
+# Extruding arcs (arc fitting): their X range is not read, see _moved_range
+ARC = re.compile(rb"\nG[23][ \t][^\n;]*E[0-9.]")
 # OrcaSlicer: the retraction of the printer profile, and that of the
 # filament profiles ("nil" where they keep the printer's), which wins
 COMMENT = re.compile(
@@ -176,6 +179,7 @@ def analyze(path):
             else:
                 _extrusion(chunk, state, info["range"], info["model_range"])
             info["tools"].update(int(t) for t in TOOL.findall(chunk))
+            info["arcs"] = info.get("arcs") or bool(ARC.search(chunk))
             if m605_mode is None:
                 m = M605.search(chunk)
                 if m:
@@ -216,7 +220,10 @@ def _extrusion(chunk, state, *ranges):
 
 def _moved_range(info):
     # What a mode change moves: the model (from the first layer) or, in a
-    # file without a layer mark, everything
+    # file without a layer mark, everything.  Not known with extruding
+    # arcs: an arc reaches beyond its end points (no mode change moves it)
+    if info.get("arcs"):
+        return [None, None]
     if info["layer_pos"] is not None and info["model_range"][0] is not None:
         return info["model_range"]
     return info["range"]
@@ -252,8 +259,7 @@ def x_offset(info, mode):
     center = (lo + hi) / 2.
     file_dual = info["mode"] in DUAL_MODES
     if mode in DUAL_MODES:
-        if file_dual:
-            return 0.
+        # Also from the other dual mode: their centers differ (80, 75)
         return round(MODE_CENTER[mode] - center, 2)
     if file_dual:
         return round(SINGLE_CENTER - center, 2)
