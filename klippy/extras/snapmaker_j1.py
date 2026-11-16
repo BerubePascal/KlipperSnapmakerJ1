@@ -870,7 +870,7 @@ class SnapmakerJ1:
                     "The print could not be prepared")
             self.gcode.run_script(pf.print_command(copy, mode))
         self._pm_thread(lambda: pf.make_copy(filename, info['layer_pos'],
-                                             offset, gcodes), done)
+                                             offset, gcodes, mode), done)
 
 def load_config(config):
     return SnapmakerJ1(config)

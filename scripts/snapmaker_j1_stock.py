@@ -162,6 +162,9 @@ def usb_partitions():
     return found
 
 def mount_sticks():
+    # Fresh mounts every time: a stick pulled since the last scan leaves a
+    # dead mount behind, which the next stick would get
+    unmount_sticks()
     dirs = []
     for i, part in enumerate(usb_partitions()):
         if part.get("mountpoint"):

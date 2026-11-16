@@ -136,6 +136,16 @@ class PrintFileTest(unittest.TestCase):
         self.assertEqual(os.listdir(os.path.join(self.gcodes, pf.COPY_DIR)),
                          ["other.gcode"])
 
+    def test_copy_reprinted_keeps_its_mode(self):
+        # A reprint of the copy (history, no MODE) prints in its mode
+        path = self.write(FILE)
+        pos = pf.analyze(path)["layer_pos"]
+        name = pf.make_copy("part.gcode", pos, -40., self.gcodes,
+                            "DUPLICATION")
+        info = pf.analyze(os.path.join(self.gcodes, name))
+        self.assertEqual(info["mode"], "DUPLICATION")
+        self.assertIsNone(pf.start_plan(info, "DUPLICATION"))
+
     def test_print_command(self):
         self.assertEqual(pf.print_command("a b.gcode"),
                          'SDCARD_PRINT_FILE FILENAME="a b.gcode"')

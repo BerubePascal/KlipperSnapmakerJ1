@@ -78,7 +78,11 @@ class WifiIcon:
         # None without a WLAN device, else the connection (ssid empty when
         # not connected)
         nm = self._sdbus_nm()
-        if nm is None or not getattr(nm, "wlan_device", None):
+        if nm is not None and not getattr(nm, "wlan_device", None):
+            # Looked up once: built again, the WLAN device may come later
+            self.nm = None
+            return None
+        if nm is None:
             return None
         status = {"ssid": "", "signal": 0, "ip": "?"}
         ap = nm.get_connected_ap()

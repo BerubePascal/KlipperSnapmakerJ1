@@ -156,10 +156,15 @@ class UpdateNotice:
     def _response(self, dialog, response_id, remote):
         self.screen.gtk.remove_dialog(dialog)
         self.dialog = None
+        if response_id == Gtk.ResponseType.OK and self._busy():
+            # A print or heating started meanwhile: asked again later
+            self.screen.show_popup_message(
+                _("Not possible while printing or heating; update later"
+                  " in More → Update"))
+            return
         # Asked once per release, whatever the answer
         settings.save(NOTIFIED, remote)
-        # Checked again: a print or heating may have started meanwhile
-        if response_id != Gtk.ResponseType.OK or self._busy():
+        if response_id != Gtk.ResponseType.OK:
             return
         screen = self.screen
         # As the update panel does it: its progress dialog, then the update

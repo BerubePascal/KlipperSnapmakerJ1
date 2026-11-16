@@ -800,7 +800,11 @@ class Panel(ScreenPanel):
             script = "SNAPMAKER_CAL_END SAVE=0"
         self.step_widgets["next"].set_sensitive(False)
         if script:
-            self._gcode(script, self._advance)
+            # Only for this step: Quit (and a new flow) may come meanwhile
+            flow, index = self.flow, self.index
+            self._gcode(script, lambda: (self.flow is flow
+                                         and self.index == index
+                                         and self._advance()))
         else:
             self._advance()
 
@@ -808,6 +812,8 @@ class Panel(ScreenPanel):
         # Quit meanwhile (or a new flow started): not for this step
         if self.flow is None or self.flow[self.index]["kind"] != F.LIVE:
             return False
+        # Leaving and coming back must not restart the loop meanwhile
+        self.live_running = False
         if self.pending:
             return True
         self._next(None)

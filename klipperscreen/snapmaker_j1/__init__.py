@@ -139,7 +139,16 @@ def init(screen):
     state_printing = screen.state_printing
     state_ready = screen.state_ready
 
+    # The flag must not outlive its print: the calibration page clears it
+    # only while it is shown (the user may have left it with Home)
+    def _calibration_shown():
+        return bool(screen._cur_panels) and screen._cur_panels[-1] == PANEL
+
     def _state_printing():
+        name = screen.printer.get_stat("print_stats", "filename") or ""
+        if (not _calibration_shown()
+                and not name.startswith(calibration.F.GCODE_DIR + "/")):
+            screen.snapmaker_calibration_print = False
         if not screen.snapmaker_calibration_print:
             state_printing()
 
@@ -148,6 +157,8 @@ def init(screen):
         screen.snapmaker_update_notice.klipper_ready()
         screen.snapmaker_addon_reload.klipper_ready()
         web_panel.setup(screen)
+        if not _calibration_shown():
+            screen.snapmaker_calibration_print = False
         if not screen.snapmaker_calibration_print:
             state_ready(wait)
             _offer_power_loss_resume(screen)

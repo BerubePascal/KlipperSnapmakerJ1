@@ -100,7 +100,8 @@ def _comments(info, chunk):
             info[field] = [_float(v.decode())
                            for v in orca.split(b",")[:2]]
         elif key == b"Extruder Mode":
-            mode = HEADER_MODES.get(value.decode().strip()) or mode
+            # The first one counts (a moved copy puts its mode first)
+            mode = mode or HEADER_MODES.get(value.decode().strip())
         else:
             info["retraction"][int(key[9:10])] = _float(value.decode())
     return mode
@@ -184,7 +185,8 @@ def analyze(path):
                 m = M605.search(chunk)
                 if m:
                     m605_mode = M605_MODES.get(int(m.group(1)))
-            header_mode = _comments(info, chunk) or header_mode
+            chunk_mode = _comments(info, chunk)
+            header_mode = header_mode or chunk_mode
             if not data:
                 break
     info["mode"] = header_mode or m605_mode or "FULL_CONTROL"
@@ -284,10 +286,11 @@ def print_command(filename, mode=None, offset=0.):
     return cmd
 
 
-def make_copy(filename, layer_pos, offset, gcodes=None):
+def make_copy(filename, layer_pos, offset, gcodes=None, mode=None):
     """Copy of the print file with SET_GCODE_OFFSET X=offset before the
     first layer, in COPY_DIR (replacing the previous one); returns its
-    name relative to the gcodes folder"""
+    name relative to the gcodes folder.  The mode goes in as the first
+    header line, so a reprint of the copy (history) prints in it too."""
     gcodes = gcodes or GCODES
     folder = os.path.join(gcodes, COPY_DIR)
     os.makedirs(folder, exist_ok=True)
@@ -301,6 +304,10 @@ def make_copy(filename, layer_pos, offset, gcodes=None):
     name = COPY_DIR + "/" + os.path.basename(filename)
     dest = os.path.join(gcodes, name)
     with open(src_path, "rb") as src, open(dest + ".tmp", "wb") as dst:
+        if mode:
+            header = next(h for h, m in HEADER_MODES.items()
+                          if m == mode and h.startswith("IDEX"))
+            dst.write(b";Extruder Mode: %s\n" % (header.encode(),))
         left = layer_pos
         while left > 0:
             data = src.read(min(CHUNK, left))

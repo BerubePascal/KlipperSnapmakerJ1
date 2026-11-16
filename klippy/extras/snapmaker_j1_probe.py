@@ -778,6 +778,16 @@ class SnapmakerJ1Probe:
                 toolhead.manual_move([cx, cy], self.xy_speed)
                 center.append(.5 * (low + high))
             toolhead.manual_move([None, None, self.travel_z], self.z_speed)
+        except self.printer.command_error:
+            # Out of the calibration hole before anything moves sideways
+            # (the carriage is parked next); the touch error is the one
+            # to report, not a failed lift
+            try:
+                toolhead.manual_move([None, None, self.travel_z],
+                                     self.z_speed)
+            except self.printer.command_error:
+                logging.exception("Lift after a failed XY touch")
+            raise
         finally:
             if not self.cal_active:
                 self._set_power(False)
@@ -1067,13 +1077,16 @@ class SnapmakerJ1Probe:
         kin.update_limits(2, (low, high))
     def _ending_session_on_error(self, func):
         # A failed measurement stops the macro before its CAL_END: the
-        # session's extra Z travel below the bed must not stay allowed
+        # session's extra Z travel below the bed must not stay allowed, and
+        # the heaters it switched on serve nothing any more
         def cmd(gcmd):
             try:
                 func(gcmd)
             except self.printer.command_error:
                 self._reset_calibration()
                 self._set_power(False)
+                self.printer.lookup_object('gcode').run_script_from_command(
+                    "TURN_OFF_HEATERS")
                 raise
         return cmd
     def _reset_calibration(self):
@@ -1169,8 +1182,15 @@ class SnapmakerJ1Probe:
         center0 = self._probe_xy_center(gcmd, 0)
         try:
             center1 = self._probe_xy_center(gcmd, 1)
-        finally:
-            self._select_carriage(0)
+        except self.printer.command_error:
+            # The nozzle is lifted; parking fails after a StallGuard stop
+            # (X no longer homed) and must not hide the real error
+            try:
+                self._select_carriage(0)
+            except self.printer.command_error:
+                logging.exception("Parking after a failed XY touch")
+            raise
+        self._select_carriage(0)
         dx = center1[0] - center0[0]
         dy = center1[1] - center0[1]
         if abs(dx) > self.max_t1_offset or abs(dy) > self.max_t1_offset:

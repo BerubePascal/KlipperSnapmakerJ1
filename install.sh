@@ -189,5 +189,3 @@ fi
 
 echo "Installed. Restart Moonraker, Klipper and KlipperScreen, eg"
 echo "  sudo systemctl restart moonraker klipper KlipperScreen"
-echo "or on KlipperSnapmakerJ1-os"
-echo "  sudo supervisorctl restart moonraker klipper KlipperScreen"

@@ -184,7 +184,8 @@ def _start(panel, filename, state):
 
     def work():
         try:
-            copy = pf.make_copy(filename, info["layer_pos"], offset)
+            copy = pf.make_copy(filename, info["layer_pos"], offset,
+                                mode=mode)
         except (IOError, OSError):
             logging.exception("Preparing %s failed", filename)
             copy = None

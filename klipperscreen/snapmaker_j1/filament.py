@@ -217,7 +217,14 @@ class Panel(calibration.Panel):
         # RESUME primes and checks the filament sensor; the job status
         # panel replaces this one when the print continues
         self.page_after_error = "loaded"
-        self._run("RESUME", _("Continue Printing"), lambda: None)
+
+        def resumed():
+            # A calibration print keeps its own page (no job status page
+            # replaces this one): back to it
+            if self._screen.snapmaker_calibration_print:
+                self._screen._menu_go_back()
+
+        self._run("RESUME", _("Continue Printing"), resumed)
 
     def _cancel(self, widget):
         self._screen._menu_go_back()

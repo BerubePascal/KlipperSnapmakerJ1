@@ -125,7 +125,24 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
   moves no longer stop with "Move out of range".
 - **Update and stock firmware dialogs** check again when confirmed that
   no print runs; a large other `.bin` file on the stick is no longer
-  read into memory.
+  read into memory.  The stock firmware page finds a stick that was
+  swapped since the last search.
+- **XY calibration:** when a touch fails, the nozzle first leaves the
+  calibration hole before the carriage parks; a failed calibration
+  measurement switches the heaters off.
+- **Reprint of a moved print:** the copy made for another print mode
+  carries its mode, so printing it again (history) prints it in that
+  mode instead of shifted in the original one.
+- **Power loss recovery** restores the noise mode and pressure advance of
+  the print.
+- **Touch screen:** the calibration print state no longer stays after a
+  calibration print ended while another page was shown (later prints
+  showed no print page); quitting while a step's commands run no longer
+  skips the first step of the next calibration; Continue Printing after a
+  runout in a calibration print returns to the calibration page; the
+  update notice says why it cannot update while printing or heating and
+  asks again later; the WLAN symbol appears when the WLAN device comes up
+  after NetworkManager.
 
 ## v1.4.0 (2026-11-13)
 
