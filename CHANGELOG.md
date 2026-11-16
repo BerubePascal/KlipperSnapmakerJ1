@@ -144,8 +144,9 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
 - **Print mode dialog (web):** a broken file link in the print files no
   longer stops Klipper.
 - **Power loss recovery** restores the noise mode, pressure advance,
-  acceleration and corner speed of the print.  The resumed print also
-  continues at the speed of the file: it ran at the maximum speed until
+  speed limit, acceleration and corner speed of the print.  The resumed
+  print also continues at the speed of the file: it ran at the maximum
+  speed until
   the file set a new one (the stored speed was converted twice).
 - **Touch screen:** the calibration print state no longer stays after a
   calibration print ended while another page was shown (later prints
