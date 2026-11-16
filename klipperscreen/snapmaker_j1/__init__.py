@@ -161,6 +161,12 @@ def init(screen):
             screen.snapmaker_calibration_print = False
         if not screen.snapmaker_calibration_print:
             state_ready(wait)
+            # state_ready marks all pages to be built again: a calibration
+            # in the middle of its flow (after its test print) keeps it
+            cal = screen.panels.get(PANEL)
+            if (getattr(cal, "flow", None) is not None
+                    and PANEL in screen.panels_reinit):
+                screen.panels_reinit.remove(PANEL)
             _offer_power_loss_resume(screen)
 
     screen.state_printing = _state_printing

@@ -32,6 +32,10 @@ INSTALLED_COMMIT=$(git -C "$KLIPPER_DIR" rev-parse HEAD)
 rm -rf "$OUT_DIR"
 mkdir -p "$OUT_DIR"
 git -C "$KLIPPER_DIR" archive HEAD | tar -x -C "$BUILD_DIR"
+# The export has no git: Klipper's build takes the version from here
+# (else the firmware reports "?" and an outdated one cannot be told apart)
+git -C "$KLIPPER_DIR" describe --always --tags --long --dirty \
+    > "$BUILD_DIR/klippy/.version"
 cd "$BUILD_DIR"
 if ! git apply --verbose "$REPO_DIR/firmware/klipper-gd32f305-snapmaker.patch" \
         2> patch.log || ! grep -q "src/stm32/snapmaker_boot.c" patch.log; then

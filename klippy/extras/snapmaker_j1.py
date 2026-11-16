@@ -739,7 +739,12 @@ class SnapmakerJ1:
                 # A name the dialog buttons cannot carry
                 if '"' in rel or '|' in rel:
                     continue
-                found.append((os.path.getmtime(path), rel))
+                try:
+                    found.append((os.path.getmtime(path), rel))
+                except OSError:
+                    # A broken link, or deleted meanwhile (any other error
+                    # here would shut Klipper down)
+                    continue
         found.sort(reverse=True)
         return [rel for mtime, rel in found]
     def _pm_check_idle(self, gcmd):

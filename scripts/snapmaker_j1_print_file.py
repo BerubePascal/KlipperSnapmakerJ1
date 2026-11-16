@@ -80,6 +80,8 @@ M605 = re.compile(rb"\nM605[ \t][^\n;]*?S([0-9])")
 LAYER = re.compile(rb"\n;(?:LAYER_CHANGE|LAYER:-?[0-9]+)\b")
 # Extruding arcs (arc fitting): their X range is not read, see _moved_range
 ARC = re.compile(rb"\nG[23][ \t][^\n;]*E[0-9.]")
+# The offset line of a moved copy (make_copy)
+MOVED = re.compile(rb"\nSET_GCODE_OFFSET X=[^\n]*; moved for the print mode")
 # OrcaSlicer: the retraction of the printer profile, and that of the
 # filament profiles ("nil" where they keep the printer's), which wins
 COMMENT = re.compile(
@@ -181,6 +183,7 @@ def analyze(path):
                 _extrusion(chunk, state, info["range"], info["model_range"])
             info["tools"].update(int(t) for t in TOOL.findall(chunk))
             info["arcs"] = info.get("arcs") or bool(ARC.search(chunk))
+            info["moved"] = info.get("moved") or bool(MOVED.search(chunk))
             if m605_mode is None:
                 m = M605.search(chunk)
                 if m:
@@ -275,7 +278,10 @@ def start_plan(info, mode):
     if mode == info["mode"]:
         return None
     offset = x_offset(info, mode)
-    return offset, bool(offset) and info["layer_pos"] is not None
+    # A moved copy carries the offset of its own mode: a new copy (with
+    # its own offset line, also 0) replaces it
+    return offset, (bool(offset) or info.get("moved", False)) \
+        and info["layer_pos"] is not None
 
 
 def print_command(filename, mode=None, offset=0.):

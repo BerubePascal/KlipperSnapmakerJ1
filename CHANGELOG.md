@@ -132,9 +132,21 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
   measurement switches the heaters off.
 - **Reprint of a moved print:** the copy made for another print mode
   carries its mode, so printing it again (history) prints it in that
-  mode instead of shifted in the original one.
-- **Power loss recovery** restores the noise mode and pressure advance of
-  the print.
+  mode instead of shifted in the original one; printed in yet another
+  mode it always gets a new copy, so its old shift does not stay.
+- **Calibration:** a calibration that waits for its next step after the
+  test print keeps its place when the print ends on another page; a
+  calibration command sent outside a calibration (eg from the console
+  during a print) no longer switches the heaters off.
+- **Main controller firmware** built on the printer reports the Klipper
+  version instead of "?".  The flash tool ignores a too short frame
+  instead of stopping, and reports a missing image file plainly.
+- **Print mode dialog (web):** a broken file link in the print files no
+  longer stops Klipper.
+- **Power loss recovery** restores the noise mode, pressure advance,
+  acceleration and corner speed of the print.  The resumed print also
+  continues at the speed of the file: it ran at the maximum speed until
+  the file set a new one (the stored speed was converted twice).
 - **Touch screen:** the calibration print state no longer stays after a
   calibration print ended while another page was shown (later prints
   showed no print page); quitting while a step's commands run no longer

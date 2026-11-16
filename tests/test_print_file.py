@@ -145,6 +145,11 @@ class PrintFileTest(unittest.TestCase):
         info = pf.analyze(os.path.join(self.gcodes, name))
         self.assertEqual(info["mode"], "DUPLICATION")
         self.assertIsNone(pf.start_plan(info, "DUPLICATION"))
+        # In another mode it gets a new copy, also when that offset is 0:
+        # the old offset line of the copy must not stay in effect
+        self.assertTrue(info["moved"])
+        plan = pf.start_plan(info, "FULL_CONTROL")
+        self.assertTrue(plan[1])
 
     def test_print_command(self):
         self.assertEqual(pf.print_command("a b.gcode"),

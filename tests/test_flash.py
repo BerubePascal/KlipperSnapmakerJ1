@@ -26,6 +26,13 @@ _spec.loader.exec_module(package)
 APP_START = 0x08002800
 
 
+class FrameNoise(unittest.TestCase):
+    def test_short_frame_with_valid_checksums_is_noise(self):
+        # Length 1, valid CRC8 and checksum: shorter than any frame
+        parser = flash.FrameParser()
+        self.assertEqual(parser.feed(bytes.fromhex("aa55010001b8ffff")), [])
+
+
 def make_app(app_start=APP_START):
     # Vector table: stack pointer in RAM, reset handler (thumb) in the app
     return struct.pack("<II", 0x20018000, app_start + 9) + bytes(range(200))

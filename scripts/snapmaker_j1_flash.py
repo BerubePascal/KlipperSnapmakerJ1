@@ -194,6 +194,11 @@ class FrameParser:
                 self.buf = self.buf[1:]
                 continue
             total = struct.unpack_from("<H", self.buf, 2)[0] + 7
+            if total < 15:
+                # Shorter than any frame (header and checksum): noise
+                self.text += self.buf[:1]
+                self.buf = self.buf[1:]
+                continue
             if len(self.buf) < total:
                 break
             raw, self.buf = self.buf[:total], self.buf[total:]
@@ -358,7 +363,12 @@ def main():
                         help="show the bootloader messages")
     args = parser.parse_args()
     try:
-        image = check_image(extract_mc_bin(open(args.image, "rb").read()))
+        try:
+            with open(args.image, "rb") as f:
+                data = f.read()
+        except OSError as e:
+            raise FlashError("Cannot read %s (%s)" % (args.image, e))
+        image = check_image(extract_mc_bin(data))
         sys.stdout.write(
             "Image %s: %d bytes at 0x%08x, checksum 0x%08x\n"
             % (image['version'] or "?", len(image['app']), image['start'],

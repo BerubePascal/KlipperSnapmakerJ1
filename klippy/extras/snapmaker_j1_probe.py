@@ -1080,6 +1080,10 @@ class SnapmakerJ1Probe:
         # session's extra Z travel below the bed must not stay allowed, and
         # the heaters it switched on serve nothing any more
         def cmd(gcmd):
+            # Without a session (eg sent from the console during a print)
+            # there is nothing to end, and the heaters are not its own
+            if not self.cal_active:
+                return func(gcmd)
             try:
                 func(gcmd)
             except self.printer.command_error:
