@@ -35,6 +35,7 @@ implemented, configuration) see [Snapmaker_J1.md](Snapmaker_J1.md).
 - [Web interface](#web-interface)
   - [Webcam](#webcam)
   - [Access from outside the home network](#access-from-outside-the-home-network)
+  - [Notifications on the phone](#notifications-on-the-phone)
 - [Slicer](#slicer)
 - [What is implemented](#what-is-implemented)
 
@@ -1051,6 +1052,36 @@ as at home.
   step 4 (without the last line) keeps the tunnel.
 - To remove it: `sudo cloudflared service uninstall` and
   `sudo apt remove cloudflared`, then delete the tunnel in the dashboard.
+
+### Notifications on the phone
+
+The printer can send a message to your phone when a print starts, ends,
+fails, is cancelled or pauses (for example after a filament runout).  This
+is Moonraker's notifier, nothing is installed; it is off until you add it.
+The example uses [ntfy](https://ntfy.sh) (free app for Android and iOS);
+Telegram, Discord, Pushover, e-mail and many more work the same way (see
+the [Apprise services](https://appriseit.com/services/) for their
+addresses).
+
+1. Install the ntfy app and subscribe to a topic of your own, a name that
+   nobody guesses (for example `j1-` followed by random letters): anyone
+   who knows the topic can read the messages.
+2. In Mainsail, **Machine → moonraker.conf**, add at the end (with your
+   topic):
+
+   ```
+   [notifier phone]
+   url: ntfy://j1-your-random-topic
+   events: started, complete, error, cancelled, paused
+   title: Snapmaker J1
+   body: {event_args[1].filename}: {event_name}
+   ```
+
+3. **Save & Restart**.  The next print sends "started".
+
+Leave out events you don't want in `events`, or add `resumed`.  To switch
+the messages off, delete the lines again.  `moonraker.conf` is yours: the
+updates of KlipperSnapmakerJ1 do not change it.
 
 ## Slicer
 

@@ -12,6 +12,9 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
 
 ## Unreleased
 
+- **Manual:** messages on the phone when a print starts, ends, fails,
+  is cancelled or pauses (Moonraker's notifier, for example with ntfy),
+  switched on with a few lines in `moonraker.conf`.
 - **Klipper v0.13.0-827** (was v0.13.0-816): fixes of Klipper, among
   them a possible memory corruption in the motion queue and analog
   readings that arrive in batches.  The main controller firmware stays
