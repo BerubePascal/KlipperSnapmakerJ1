@@ -21,9 +21,13 @@ def make(save_interval=30.):
     p.reactor = types.SimpleNamespace(monotonic=lambda: clock.now)
     toolhead = types.SimpleNamespace(
         print_time=0., lookahead=types.SimpleNamespace(get_last=lambda: None))
-    p.printer = types.SimpleNamespace(lookup_object=lambda name: toolhead,
-                                      lookup_objects=lambda module: [],
-                                      is_shutdown=lambda: False)
+    motion_queuing = types.SimpleNamespace(drip_start_times=[])
+    objects = {"toolhead": toolhead, "motion_queuing": motion_queuing}
+    p.printer = types.SimpleNamespace(
+        lookup_object=lambda name, default=None: objects[name],
+        lookup_objects=lambda module: [],
+        is_shutdown=lambda: False)
+    p.motion_queuing = motion_queuing
     p.save_interval = save_interval
     p.print_seen = False
     p.checkpoints = []
@@ -68,6 +72,17 @@ class SaveRate(unittest.TestCase):
         self.assertEqual(p.last_saved_z, 0.4)
         self.assertLessEqual(p.writes[1] - p.writes[0],
                              pl.MIN_SAVE_GAP + STEP + 1e-9)
+
+    def test_nothing_stored_while_homing(self):
+        # Homing (drip moves) at the start of a print: no snapshot and no
+        # write, a long reactor pass would stop the printer
+        p, clock = make()
+        p.motion_queuing.drip_start_times.append(1.)
+        run(p, clock, 5., lambda t: 0.)
+        self.assertEqual((p.writes, p.checkpoints), ([], []))
+        p.motion_queuing.drip_start_times.clear()
+        run(p, clock, 1., lambda t: 0.2)
+        self.assertEqual(len(p.writes), 1)
 
 
 if __name__ == "__main__":

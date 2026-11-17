@@ -10,6 +10,14 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
   Klipper, Moonraker or KlipperScreen (`versions.conf`).
 - **PATCH:** fixes.
 
+## Unreleased
+
+- **Power loss recovery while homing:** no state is stored during homing
+  and probing moves (the G28 of the start G-code), where Klipper queues
+  only a fraction of a second of steps.  Less work in this window; a
+  print start once stopped there with "Timer too close" (not
+  reproducible, so not proven to be the cause).
+
 ## v1.6.0 (2026-11-17)
 
 - **Manual:** messages on the phone when a print starts, ends, fails,
