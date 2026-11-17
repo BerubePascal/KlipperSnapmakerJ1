@@ -1081,6 +1081,11 @@ addresses).
 
 3. **Save & Restart**.  The next print sends "started".
 
+<img src="manual/ntfy-app.jpg" width="300" alt="Messages of the printer in the ntfy app on a phone">
+
+Example in the ntfy app: a print started, stopped with an error, started
+again and cancelled.
+
 Leave out events you don't want in `events`, or add `resumed`.  To switch
 the messages off, delete the lines again.  `moonraker.conf` is yours: the
 updates of KlipperSnapmakerJ1 do not change it.
