@@ -73,8 +73,9 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
   next print started that much too high or too low.  A calibration now
   sets it back to 0 when it starts.  A test checks where Z 0 lies after
   a calibration (`tests/test_z_origin.py`).
-- **Settings of the touch screen:** they are written in one step, so
-  switching the printer off right after a change no longer loses them.
+- **Settings of the touch screen:** they are written in one step and
+  stored at once, so switching the printer off right after a change no
+  longer loses them.
 - **Main controller update:** a damaged request of the bootloader no
   longer ends `snapmaker_j1_flash.py` with a Python error.
 - **Duplication and mirror with a file for the right toolhead:** the
@@ -146,8 +147,8 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
 - **Power loss recovery** restores the noise mode, pressure advance,
   speed limit, acceleration and corner speed of the print.  The resumed
   print also continues at the speed of the file: it ran at the maximum
-  speed until
-  the file set a new one (the stored speed was converted twice).
+  speed until the file set a new one (the stored speed was converted
+  twice).
 - **Touch screen:** the calibration print state no longer stays after a
   calibration print ended while another page was shown (later prints
   showed no print page); quitting while a step's commands run no longer
@@ -155,7 +156,9 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
   runout in a calibration print returns to the calibration page; the
   update notice says why it cannot update while printing or heating and
   asks again later; the WLAN symbol appears when the WLAN device comes up
-  after NetworkManager.
+  after NetworkManager.  In the calibration test print, Pause is off
+  before the print starts and after it ended; the filament step names
+  its Next button.
 
 ## v1.4.0 (2026-11-13)
 

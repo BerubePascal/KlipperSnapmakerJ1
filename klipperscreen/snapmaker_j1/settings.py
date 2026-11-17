@@ -30,9 +30,17 @@ def save(name, value):
     settings[name] = value
     try:
         os.makedirs(os.path.dirname(SETTINGS_FILE), exist_ok=True)
-        # Never a half written file when the printer is switched off
+        # Never a half written file when the printer is switched off, and
+        # stored at once (the root file system commits only every 60s)
         with open(SETTINGS_FILE + ".tmp", "w") as f:
             json.dump(settings, f)
+            f.flush()
+            os.fsync(f.fileno())
         os.replace(SETTINGS_FILE + ".tmp", SETTINGS_FILE)
+        folder = os.open(os.path.dirname(SETTINGS_FILE), os.O_RDONLY)
+        try:
+            os.fsync(folder)
+        finally:
+            os.close(folder)
     except OSError:
         logging.exception("Saving %s failed", SETTINGS_FILE)

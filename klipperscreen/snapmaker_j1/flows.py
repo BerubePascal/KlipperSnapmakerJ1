@@ -99,7 +99,7 @@ def build():
             LOAD, _("Load Filament"),
             _("Tap Go to Load to load two PLA filaments of clearly different"
               " colors (for example orange and white).\n\nIf the filaments"
-              " are already loaded, tap Print."), image)
+              " are already loaded, tap Next."), image)
 
     flows = {
         'bed_assist': [

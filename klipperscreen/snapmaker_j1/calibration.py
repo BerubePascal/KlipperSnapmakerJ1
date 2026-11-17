@@ -1105,4 +1105,7 @@ class Panel(ScreenPanel):
             state = self._stat("print_stats", "state")
             self.step_widgets["pause"].set_label(
                 _("Resume") if state == "paused" else _("Pause"))
+            # Nothing to pause before the print starts or after it ended
+            self.step_widgets["pause"].set_sensitive(
+                state in ("printing", "paused"))
             self._set_ready(state == "complete")
