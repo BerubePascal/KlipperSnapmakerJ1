@@ -543,7 +543,7 @@ Each release is made and tested with the versions listed in its
 
 | Component | Version | Commit | Date |
 | --- | --- | --- | --- |
-| [Klipper](https://github.com/Klipper3d/klipper) | v0.13.0-816-gee2c6fb6 | `ee2c6fb6` | 2026-10-21 |
+| [Klipper](https://github.com/Klipper3d/klipper) | v0.13.0-827-g29d4ec2d | `29d4ec2d` | 2026-11-10 |
 | [Moonraker](https://github.com/Arksine/moonraker) | v0.11.0-4-gb559b9a | `b559b9a8` | 2026-10-21 |
 | [KlipperScreen](https://github.com/KlipperScreen/KlipperScreen) | v0.4.7-198-g911c75b | `911c75bf` | 2026-10-18 |
 | [KlipperSnapmakerJ1-os](https://github.com/Nimrasol/KlipperSnapmakerJ1-os) | Debian 12 (bookworm) armhf, Python 3.11, lk2nd and Linux 6.12 (msm8916-mainline) | | |

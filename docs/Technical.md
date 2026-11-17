@@ -139,7 +139,7 @@ This release is tested with ([versions.conf](../versions.conf)):
 
 | Component | Version | Date |
 | --- | --- | --- |
-| Klipper | v0.13.0-816-gee2c6fb6 | 2026-10-21 |
+| Klipper | v0.13.0-827-g29d4ec2d | 2026-11-10 |
 | Moonraker | v0.11.0-4-gb559b9a | 2026-10-21 |
 | KlipperScreen | v0.4.7-198-g911c75b | 2026-10-18 |
 

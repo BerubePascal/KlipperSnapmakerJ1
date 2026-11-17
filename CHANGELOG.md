@@ -12,6 +12,11 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
 
 ## Unreleased
 
+- **Klipper v0.13.0-827** (was v0.13.0-816): fixes of Klipper, among
+  them a possible memory corruption in the motion queue and analog
+  readings that arrive in batches.  The main controller firmware stays
+  as it is (no Update Firmware needed).  The update manager offers it
+  together with this release.
 - **Cancelled print:** the motors are switched off at the end, as after a
   finished print.  They stayed on until the idle timeout (30 minutes),
   and the warm drivers kept the main board fan at full speed.
