@@ -17,6 +17,13 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
   readings that arrive in batches.  The main controller firmware stays
   as it is (no Update Firmware needed).  The update manager offers it
   together with this release.
+- **KlipperScreen v0.4.7-217** (was v0.4.7-198): the settings are sorted
+  into categories, a new WLAN page, the time left takes excluded objects
+  into account, and fixes.  The add-on follows: the WLAN symbol reads
+  NetworkManager itself (the new WLAN page could not start next to it),
+  the touch friendly choice lists work with the new lists, and the
+  display options stay on the Light page without an empty "Display"
+  category.
 - **Cancelled print:** the motors are switched off at the end, as after a
   finished print.  They stayed on until the idle timeout (30 minutes),
   and the warm drivers kept the main board fan at full speed.

@@ -141,7 +141,7 @@ This release is tested with ([versions.conf](../versions.conf)):
 | --- | --- | --- |
 | Klipper | v0.13.0-827-g29d4ec2d | 2026-11-10 |
 | Moonraker | v0.11.0-4-gb559b9a | 2026-10-21 |
-| KlipperScreen | v0.4.7-198-g911c75b | 2026-10-18 |
+| KlipperScreen | v0.4.7-217-ga12e8dd | 2026-11-15 |
 
 The update manager offers updates only up to these versions; see
 [Compatibility](Snapmaker_J1.md#compatibility) for what depends on each

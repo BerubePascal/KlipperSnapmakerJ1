@@ -42,20 +42,22 @@ def _show(screen, combo, title):
     label.set_markup("<big><b>%s</b></big>" % title)
     grid.attach(label, 0, 0, COLUMNS, 1)
     dialog = None
-    active = combo.get_active_id()
+    active = combo.get_active()
+    # Gtk.ComboBoxText keeps (text, id), KlipperScreen's ComboBoxPlus
+    # (value, text): chosen by position, which both have
+    text_column = 0 if isinstance(combo, Gtk.ComboBoxText) else 1
 
-    def chosen(button, value):
+    def chosen(button, index):
         gtk.remove_dialog(dialog)
-        if value != combo.get_active_id():
-            combo.set_active_id(value)
+        if index != combo.get_active():
+            combo.set_active(index)
 
     for i, row in enumerate(combo.get_model()):
-        text, value = row[0], row[1]
-        button = gtk.Button(None, text, None, scale=.66)
+        button = gtk.Button(None, row[text_column], None, scale=.66)
         button.set_vexpand(False)
-        if value == active:
+        if i == active:
             button.get_style_context().add_class("dialog-primary")
-        button.connect("clicked", chosen, value)
+        button.connect("clicked", chosen, i)
         grid.attach(button, i % COLUMNS, 1 + i // COLUMNS, 1, 1)
     scroll = gtk.ScrolledWindow()
     scroll.add(grid)

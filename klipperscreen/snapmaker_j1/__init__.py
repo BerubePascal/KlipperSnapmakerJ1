@@ -306,10 +306,12 @@ def init(screen):
     # Drop-downs of the settings open a touch friendly choice
     add_option = ScreenPanel.add_option
     if not getattr(add_option, "snapmaker_j1", False):
-        def _add_option(self, boxname, opt_array, opt_name, option):
-            setting = add_option(self, boxname, opt_array, opt_name, option)
+        def _add_option(self, boxname, opt_array, opt_name, option,
+                        *args, **kwargs):
+            setting = add_option(self, boxname, opt_array, opt_name, option,
+                                 *args, **kwargs)
             widget = (setting or {}).get(opt_name)
-            if isinstance(widget, Gtk.ComboBoxText):
+            if isinstance(widget, Gtk.ComboBox):
                 chooser.attach(screen, widget, option["name"])
             return setting
 
@@ -796,10 +798,12 @@ def _patch_move_options(panel_class):
     if getattr(add_option, "snapmaker_j1", False):
         return
 
-    def _add_option(self, boxname, opt_array, opt_name, option):
+    def _add_option(self, boxname, opt_array, opt_name, option,
+                    *args, **kwargs):
         if opt_name in ("invert_x", "invert_y", "invert_z"):
             return {}
-        return add_option(self, boxname, opt_array, opt_name, option)
+        return add_option(self, boxname, opt_array, opt_name, option,
+                          *args, **kwargs)
 
     _add_option.snapmaker_j1 = True
     panel_class.add_option = _add_option
@@ -914,19 +918,26 @@ def _reset_font_size(screen):
 
 def _patch_settings_options(panel_class):
     # The display settings are in the light panel; the font size is not
-    # offered (see _reset_font_size)
-    add_option = panel_class.add_option
-    if getattr(add_option, "snapmaker_j1", False):
+    # offered (see _reset_font_size).  Left out of the options the panel
+    # reads, before it sorts them into categories (no empty "Display")
+    init = panel_class.__init__
+    if getattr(init, "snapmaker_j1", False):
         return
+    hidden = set(light.DISPLAY_OPTIONS) | {"font_size"}
 
-    def _add_option(self, boxname, opt_array, opt_name, option):
-        if boxname == "settings" and (opt_name in light.DISPLAY_OPTIONS
-                                      or opt_name == "font_size"):
-            return {}
-        return add_option(self, boxname, opt_array, opt_name, option)
+    def _init(self, screen, title, *args, **kwargs):
+        config = screen._config
+        options = config.get_configurable_options
+        config.get_configurable_options = lambda: [
+            o for o in options() if list(o)[0] not in hidden]
+        try:
+            init(self, screen, title, *args, **kwargs)
+        finally:
+            # The method of the class again (the light panel reads all)
+            del config.get_configurable_options
 
-    _add_option.snapmaker_j1 = True
-    panel_class.add_option = _add_option
+    _init.snapmaker_j1 = True
+    panel_class.__init__ = _init
 
 
 def _patch_system(screen, panel_class):

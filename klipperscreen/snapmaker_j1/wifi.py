@@ -9,12 +9,14 @@ import socket
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import GdkPixbuf, GLib, Gtk, Pango
+from gi.repository import GdkPixbuf, Gio, GLib, Gtk, Pango
 
 from . import style
 
 # Seconds between two readings of the connection
 POLL = 5
+NM = "org.freedesktop.NetworkManager"
+DEVICE_TYPE_WIFI = 2
 # The parts of the WLAN symbol of the theme (wifi_excellent.svg): the dot
 # and the two arcs, from the inside out
 PARTS = (
@@ -59,39 +61,55 @@ class WifiIcon:
         self._update()
         GLib.timeout_add_seconds(POLL, self._update)
 
-    def _sdbus_nm(self):
-        # Tried again at every update: NetworkManager may start after
-        # KlipperScreen (it waits for the WLAN firmware); logged once
+    def _bus(self):
+        # NetworkManager's properties over GLib's D-Bus, not KlipperScreen's
+        # network module (its interface changes between versions) nor
+        # sdbus-networkmanager (loading its blocking and its asynchronous
+        # flavour in one process fails, and KlipperScreen uses the latter)
         if self.nm is None:
             try:
-                from ks_includes.sdbus_nm import SdbusNm
-                self.nm = SdbusNm(
-                    lambda msg, *args: logging.info("WLAN: %s", msg))
-            except Exception:
+                self.nm = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
+            except GLib.Error:
                 if not self.nm_failed:
-                    logging.exception(
-                        "WLAN symbol: NetworkManager not available")
+                    logging.exception("WLAN symbol: no system bus")
                 self.nm_failed = True
         return self.nm
 
+    def _get(self, path, interface, name):
+        return self.nm.call_sync(
+            NM, path, "org.freedesktop.DBus.Properties", "Get",
+            GLib.Variant("(ss)", (NM + interface, name)),
+            GLib.VariantType("(v)"), Gio.DBusCallFlags.NONE, 2000,
+            None).unpack()[0]
+
     def _status(self):
         # None without a WLAN device, else the connection (ssid empty when
-        # not connected)
-        nm = self._sdbus_nm()
-        if nm is None:
+        # not connected).  The devices are read every time: NetworkManager
+        # may start after KlipperScreen (it waits for the WLAN firmware), and
+        # the WLAN device may come up later or be created anew
+        if self._bus() is None:
             return None
-        if not getattr(nm, "wlan_device", None):
-            # Looked up once at the start: the WLAN device may come later
-            nm.wlan_device = next(iter(nm.get_wireless_interfaces()), None)
-            if nm.wlan_device is None:
-                return None
+        wlan = None
+        for path in self._get("/org/freedesktop/NetworkManager", "",
+                              "Devices"):
+            if self._get(path, ".Device", "DeviceType") == DEVICE_TYPE_WIFI:
+                wlan = path
+                break
+        if wlan is None:
+            return None
         status = {"ssid": "", "signal": 0, "ip": "?"}
-        ap = nm.get_connected_ap()
-        if ap is None:
+        ap = self._get(wlan, ".Device.Wireless", "ActiveAccessPoint")
+        if ap == "/":
             return status
-        status["ssid"] = ap.ssid.decode("utf-8", errors="ignore")
-        status["signal"] = ap.strength
-        status["ip"] = nm.get_ip_for_interface(nm.wlan_device.interface)
+        status["ssid"] = bytes(self._get(ap, ".AccessPoint", "Ssid")).decode(
+            "utf-8", errors="ignore")
+        status["signal"] = self._get(ap, ".AccessPoint", "Strength")
+        # A connection without a lease yet reports "/"
+        config = self._get(wlan, ".Device", "Ip4Config")
+        if config != "/":
+            addresses = self._get(config, ".IP4Config", "AddressData")
+            if addresses:
+                status["ip"] = addresses[0]["address"]
         return status
 
     def _update(self):
