@@ -1063,9 +1063,11 @@ Telegram, Discord, Pushover, e-mail and many more work the same way (see
 the [Apprise services](https://appriseit.com/services/) for their
 addresses).
 
-1. Install the ntfy app and subscribe to a topic of your own, a name that
-   nobody guesses (for example `j1-` followed by random letters): anyone
-   who knows the topic can read the messages.
+1. On your phone, install the app **ntfy** (Google Play, F-Droid or App
+   Store), tap **+** and subscribe to a topic of your own on the server
+   `ntfy.sh`, a name that nobody guesses (for example `j1-` followed by
+   random letters): anyone who knows the topic can read the messages.  No
+   account is needed.
 2. In Mainsail, **Machine → moonraker.conf**, add at the end (with your
    topic):
 
