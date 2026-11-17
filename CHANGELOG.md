@@ -16,6 +16,10 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
   Mainsail dashboard of phones, where Mainsail hides it by default.  This
   applies when Mainsail is set up for the first time; on a printer that is
   already set up, switch it on under **Settings → Dashboard → Mobile**.
+- **Nozzle colors in Mainsail:** Extruder (left nozzle) is orange and
+  Extruder1 (right nozzle) yellow, as on the touch screen; Mainsail
+  cannot rename them.  Set once after the update; a color chosen later
+  in Mainsail stays.
 - **Manual:** on Android, the browser needs the permission **Nearby
   devices** to open Mainsail (`ERR_TOO_MANY_RETRIES` without it).
 - **Manual:** how to reach Mainsail from outside the home network with a

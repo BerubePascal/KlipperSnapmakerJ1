@@ -18,8 +18,15 @@
 import logging
 import os
 
+from . import settings
+
 NAMESPACE = "mainsail"
 GROUP_ID = "snapmaker-j1"
+# The nozzle colors of the touch screen (theme/style.conf) in the
+# temperature panel and chart, set once (Mainsail cannot rename extruder
+# and extruder1; the colors tell left and right apart)
+COLORS = {"extruder": "#FF8A00", "extruder1": "#FFD600"}
+COLORS_SET = "mainsail_colors_set"
 
 
 def _macro(pos, name, standby=True, printing=False, pause=False):
@@ -135,6 +142,12 @@ def setup(screen):
             if name not in dashboard:
                 logging.info("Mainsail: J1 panel on top of %s", name)
                 _post(screen, "dashboard." + name, _layout(name))
+        if not settings.get(COLORS_SET, False):
+            logging.info("Mainsail: nozzle colors of the touch screen")
+            for name, color in COLORS.items():
+                _post(screen, "view.tempchart.datasetSettings.%s.color"
+                      % name, color)
+            settings.save(COLORS_SET, True)
         return False
 
     screen._ws.send_method("server.database.get_item",
