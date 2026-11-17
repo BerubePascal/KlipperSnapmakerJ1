@@ -10,6 +10,12 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
   Klipper, Moonraker or KlipperScreen (`versions.conf`).
 - **PATCH:** fixes.
 
+## Unreleased
+
+- **Cancelled print:** the motors are switched off at the end, as after a
+  finished print.  They stayed on until the idle timeout (30 minutes),
+  and the warm drivers kept the main board fan at full speed.
+
 ## v1.5.0 (2026-11-17)
 
 - **Webcam on phones:** the webcam panel is now also shown on the
