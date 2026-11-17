@@ -10,7 +10,7 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
   Klipper, Moonraker or KlipperScreen (`versions.conf`).
 - **PATCH:** fixes.
 
-## Unreleased
+## v1.6.0 (2026-11-17)
 
 - **Manual:** messages on the phone when a print starts, ends, fails,
   is cancelled or pauses (Moonraker's notifier, for example with ntfy),
