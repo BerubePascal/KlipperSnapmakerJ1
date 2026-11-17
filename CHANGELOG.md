@@ -10,7 +10,7 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
   Klipper, Moonraker or KlipperScreen (`versions.conf`).
 - **PATCH:** fixes.
 
-## Unreleased
+## v1.5.0 (2026-11-17)
 
 - **Webcam on phones:** the webcam panel is now also shown on the
   Mainsail dashboard of phones, where Mainsail hides it by default.  This
