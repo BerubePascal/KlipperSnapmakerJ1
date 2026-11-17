@@ -1039,6 +1039,10 @@ as at home.
 
 <img src="manual/web-phone.jpg" width="300" alt="Mainsail in Chrome on an Android phone, with the webcam on the dashboard">
 
+- **"Connection failed" without a login:** the browser shows Mainsail
+  from its cache while the Cloudflare login has expired, and Moonraker
+  cannot be reached.  Reload with **Ctrl+Shift+R** (or open the address
+  in a private window): Cloudflare asks for the login again.
 - The tunnel survives updates of KlipperSnapmakerJ1, Klipper, Moonraker,
   KlipperScreen and Mainsail.  Reinstalling the display system or going
   back to the stock firmware removes it; step 4 sets it up again with the
