@@ -17,6 +17,8 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
   only a fraction of a second of steps.  Less work in this window; a
   print start once stopped there with "Timer too close" (not
   reproducible, so not proven to be the cause).
+- **Print page:** the preview picture of the print is back after a
+  pause (it was dropped while the extrude page lay over the print page).
 
 ## v1.6.0 (2026-11-17)
 

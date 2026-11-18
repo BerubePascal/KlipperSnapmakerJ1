@@ -643,6 +643,10 @@ def _patch_job_status(panel_class):
     def _activate(self):
         if activate is not None:
             activate(self)
+        # On a pause the page is built anew with the extrude page put over
+        # it at once: the thumbnail, loaded meanwhile, was dropped
+        if getattr(self, "filename", None):
+            self.show_file_thumbnail()
         _update_mode(self)
         if getattr(self, "snapmaker_mode_timer", None) is None:
             self.snapmaker_mode_timer = GLib.timeout_add_seconds(
