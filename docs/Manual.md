@@ -350,6 +350,10 @@ animations.  It adds two entries: PID Auto Tune and Build Plate.
   with the nozzle contact sensors, and the manual workflow with the
   calibration card.  It is available for Heated Bed Leveling, Z Offset
   Calibration and XY Offset Calibration.  The choice is kept.
+  Use the manual workflow with coated nozzles: the coating can keep the
+  contact sensor from detecting the bed or the calibration feature.  An
+  assisted calibration stops with "No nozzle contact" when a nozzle does
+  not detect the contact within a few millimetres.
 - **Start:** starts the calibration.
 
 **Recommended order** (as on the stock display), for a new printer or

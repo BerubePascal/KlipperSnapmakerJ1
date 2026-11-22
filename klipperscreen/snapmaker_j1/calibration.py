@@ -840,6 +840,18 @@ class Panel(ScreenPanel):
         self._show_detail()
         self.content.show_all()
 
+    @staticmethod
+    def _dialog_label(*paragraphs):
+        # As the add-on's other dialogs: a centered block of text in the
+        # middle of the dialog, paragraphs separated by an empty line
+        label = Gtk.Label(hexpand=True, vexpand=True, halign=Gtk.Align.CENTER,
+                          valign=Gtk.Align.CENTER, wrap=True,
+                          wrap_mode=Pango.WrapMode.WORD_CHAR,
+                          justify=Gtk.Justification.CENTER,
+                          max_width_chars=48)
+        label.set_text("\n\n".join(paragraphs))
+        return label
+
     def _ask_quit(self, widget):
         buttons = [
             {"name": _("Quit"), "response": Gtk.ResponseType.OK,
@@ -847,10 +859,8 @@ class Panel(ScreenPanel):
             {"name": _("Cancel"), "response": Gtk.ResponseType.CANCEL,
              "style": "dialog-info"},
         ]
-        label = self._label(_("The current data will not be saved."
-                              " Are you sure to quit?"))
-        label.set_halign(Gtk.Align.CENTER)
-        label.set_valign(Gtk.Align.CENTER)
+        label = self._dialog_label(_("The current data will not be saved."
+                                     " Are you sure to quit?"))
         self._gtk.Dialog(_("Calibration"), buttons, label, self._quit_response)
 
     def _quit_response(self, dialog, response_id):
@@ -892,7 +902,7 @@ class Panel(ScreenPanel):
         intro = (_("The PID auto tune failed.") if pid else
                  _("The machine failed to obtain the data. You can clean"
                    " the nozzle and retry."))
-        label = self._label(intro + "\n\n" + message)
+        label = self._dialog_label(intro, message)
         if self.flow is not None:
             self._quit()
             # Quitting a failed autotune expects no further error

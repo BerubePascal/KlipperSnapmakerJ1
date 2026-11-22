@@ -337,7 +337,9 @@ xy_probe_z:
 #z_probe_speed: 5
 #z_probe_slow_speed: 0.5
 #z_live_speed: 1.25
-#xy_probe_distance: 15
+#xy_probe_distance: 8
+#   Longest fast XY touch.  The hole wall is about 4.6mm from the center;
+#   no contact within this distance aborts the calibration (stock: 15).
 #xy_probe_speed: 13.333
 #xy_probe_slow_speed: 1.333
 #probe_backoff: 1
@@ -946,6 +948,10 @@ During a calibration session the Z range reaches 10mm below
 position_min, so the touches find the bed even when a stored Z origin
 is several millimetres wrong (eg after a manual Z calibration with a
 mismeasured card); the normal range returns when the session ends.
+A Z touch still ends 3mm below the expected bare bed (the measured
+reference, else the Z origin minus the plate thickness) and reports no
+nozzle contact there, so a nozzle whose sensor misses the bed (eg a
+coated nozzle) is not pushed further against it.
 Repeated `SNAPMAKER_CAL_HEIGHT` calls at the same point work like the
 stock live measurement: the first touch is fast and StallGuard guarded,
 the next ones are slow and only as long as the last change requires; a

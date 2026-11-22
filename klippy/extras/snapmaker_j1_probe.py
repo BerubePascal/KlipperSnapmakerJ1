@@ -33,6 +33,9 @@ MAX_PLATE_THICKNESS = 10.
 # Extra Z travel below position_min during a calibration session, so the
 # touches find the bed also with a Z origin that is several mm wrong
 CAL_Z_EXTRA = 10.
+# Farthest a Z touch goes below the expected bare bed before it reports no
+# contact (mm); the Z origin of an uncalibrated printer may be this far off
+Z_CONTACT_MARGIN = 3.
 # Trigger reason of a driver DIAG line (the reasons of klippy/mcu.py
 # end at REASON_COMMS_TIMEOUT)
 REASON_STALLGUARD = 8
@@ -402,7 +405,11 @@ class SnapmakerJ1Probe:
                                             above=0.)
         self.z_live_speed = config.getfloat('z_live_speed', 1.25, above=0.)
         self.xy_probe_z = config.getfloat('xy_probe_z')
-        self.xy_distance = config.getfloat('xy_probe_distance', 15., above=0.)
+        # The calibration hole wall is about 4.6mm from its center: a fast
+        # touch without contact within 8mm (start up to ~3mm off center)
+        # means the nozzle sensor does not detect the wall - stop there
+        # instead of pushing on (stock: 15mm)
+        self.xy_distance = config.getfloat('xy_probe_distance', 8., above=0.)
         self.xy_speed = config.getfloat('xy_probe_speed', 13.333, above=0.)
         self.xy_slow_speed = config.getfloat('xy_probe_slow_speed', 1.333,
                                              above=0.)
@@ -605,6 +612,12 @@ class SnapmakerJ1Probe:
         high = status['axis_maximum'][axis]
         if axis == 2 and self.cal_active:
             low -= CAL_Z_EXTRA
+            # No contact a few mm past the expected bare bed (the measured
+            # reference, else the plate surface minus the plate) means the
+            # sensor misses the bed: stop instead of pushing on
+            bed = self.datum if self.datum is not None else (
+                -self.plate_thickness)
+            low = max(low, bed - Z_CONTACT_MARGIN)
         target[axis] = min(max(target[axis], low), high)
         return target
     def _touch(self, axis, direction, distance, speed, guarded=False):
@@ -641,8 +654,16 @@ class SnapmakerJ1Probe:
                     " touched - check for obstacles, the build plate and"
                     " the nozzle sensor" % (axis_name,))
             if "No trigger" in str(e):
+                # The nozzle may have pushed against an obstacle and lost
+                # steps (stock: re-home after every failed probe); not Z,
+                # whose live touch retries after a miss
+                if axis != 2:
+                    toolhead.get_kinematics().clear_homing_state(
+                        axis_name.lower())
                 raise self.printer.command_error(
-                    "No nozzle contact within %.1fmm on the %s axis"
+                    "No nozzle contact within %.1fmm on the %s axis - check"
+                    " the nozzle sensor; a coated nozzle may not be"
+                    " detected, use the manual calibration"
                     % (abs(target[axis] - start), axis_name))
             raise
         finally:

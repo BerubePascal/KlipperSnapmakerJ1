@@ -12,6 +12,14 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
 
 ## Unreleased
 
+- **Assisted calibrations stop when a nozzle detects no contact:** the
+  XY touch now ends 8mm from the center (was 15mm), a Z touch 3mm below
+  the expected bed (was up to 10mm below the travel range), and the
+  calibration aborts with "No nozzle contact" instead of pushing the
+  nozzle further.  The message points to the manual calibration, which
+  coated nozzles need.  After an XY abort the axis is homed again.
+- **Calibration dialogs** (failed step, quit) show their text centered
+  like the other dialogs of the add-on.
 - **Power loss recovery while homing:** no state is stored during homing
   and probing moves (the G28 of the start G-code), where Klipper queues
   only a fraction of a second of steps.  Less work in this window; a
