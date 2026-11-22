@@ -154,6 +154,16 @@ class CaseLight:
 
     def _dim(self):
         self.dim_timer = None
+        # ! LOCAL CHANGE (fork): never dim during a print (printing or
+        # ! paused); the timer checks again after the same delay, so dimming
+        # ! works again once the print is over.
+        printer = self.screen.printer
+        if printer is not None and printer.state in ("printing", "paused"):
+            delay = settings.get("light_dim_delay", DIM_DELAY_DEFAULT)
+            if delay:
+                self.dim_timer = GLib.timeout_add_seconds(delay * 60,
+                                                          self._dim)
+            return False
         self.idle = True
         if self.available():
             level = self.level()
