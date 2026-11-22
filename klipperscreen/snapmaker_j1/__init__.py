@@ -5,6 +5,7 @@
 # This file may be distributed under the terms of the GNU GPLv3 license.
 import logging
 import os
+import subprocess
 from math import pi
 
 import gi
@@ -65,8 +66,26 @@ STOPPED_STATES = ("shutdown", "error")
 SHUTDOWN_HINT = "Once the underlying issue is corrected"
 
 
+WIFI_CONF = "/etc/NetworkManager/conf.d/90-snapmaker-j1-wifi-powersave.conf"
+WIFI_SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
+                           "..", "scripts", "snapmaker_j1_wifi.sh")
+
+
+def _wifi_power_save_off():
+    # Systems installed before the OS switched Wi-Fi power saving off get
+    # the setting once (it made Mainsail lose its connection)
+    if os.path.exists(WIFI_CONF):
+        return
+    try:
+        subprocess.Popen(["sudo", "-n", "bash", os.path.realpath(WIFI_SCRIPT)],
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except OSError:
+        logging.exception("Switching Wi-Fi power saving off")
+
+
 def init(screen):
     _reset_font_size(screen)
+    _wifi_power_save_off()
     # Provide the calibration panel without adding files to KlipperScreen
     load_panel = screen._load_panel
 

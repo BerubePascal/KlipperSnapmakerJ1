@@ -860,7 +860,14 @@ the title bar (`wifi.py`) shows the signal strength of the connection
 the levels of the WLAN panel, drawn from the parts of the theme symbol
 with the bars without signal in grey); a tap shows the network, the
 signal, the IP address and the web interface address, with a button
-to the WLAN panel.  A USB camera streams to Mainsail (`webcam.py`,
+to the WLAN panel.  Wi-Fi power saving is off
+(`/etc/NetworkManager/conf.d/90-snapmaker-j1-wifi-powersave.conf`,
+`wifi.powersave = 2`): with it the chip held packets back, pings
+varied from 3 to 111ms and Mainsail lost its connection during
+prints (3 to 21ms without).  The OS image has the file; on older
+systems the add-on writes it once with sudo
+(`scripts/snapmaker_j1_wifi.sh`) and switches power saving off at
+once.  A USB camera streams to Mainsail (`webcam.py`,
 `scripts/snapmaker_j1_webcam.sh`): ustreamer on 127.0.0.1:8080 (MJPEG
 1280x720 at 15 fps, passed through without encoding; cameras without
 MJPEG are not streamed, as encoding their frames took 75% of one core;

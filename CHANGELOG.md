@@ -12,6 +12,10 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
 
 ## Unreleased
 
+- **Stable Mainsail connection over WLAN:** Wi-Fi power saving is
+  switched off.  It delayed packets (pings up to 111ms instead of
+  21ms) and Mainsail lost its connection during prints.  The add-on
+  sets it once on systems installed before the OS has it.
 - **Assisted calibrations stop when a nozzle detects no contact:** the
   XY touch now ends 8mm from the center (was 15mm), a Z touch 3mm below
   the expected bed (was up to 10mm below the travel range), and the
