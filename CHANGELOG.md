@@ -18,6 +18,14 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
   calibration aborts with "No nozzle contact" instead of pushing the
   nozzle further.  The message points to the manual calibration, which
   coated nozzles need.  After an XY abort the axis is homed again.
+- **Fine Tuning during calibration test prints:** the print step of the
+  calibration page has a Fine Tuning button (Z offset, speed, flow);
+  Back returns to the calibration.
+- **Test prints in PETG or ABS:** the Load Filament page of the
+  calibration test prints (XY offset, calibration check, vibration)
+  offers PLA, PETG and ABS.  The prints are sliced for PLA; PETG prints
+  30 °C hotter with the bed at 75 °C, ABS 40 °C hotter at 90 °C
+  (`SNAPMAKER_CAL_MATERIAL`).
 - **Calibration dialogs** (failed step, quit) show their text centered
   like the other dialogs of the add-on.
 - **Power loss recovery while homing:** no state is stored during homing

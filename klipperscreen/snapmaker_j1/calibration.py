@@ -244,6 +244,8 @@ class Panel(ScreenPanel):
         self.pending = False
         self.live_running = False
         self.choice = None
+        # Material of the test prints (kept while the screen runs)
+        self.material = F.MATERIALS[0]
         self.offset = [0., 0.]
         self.step_ready = False
         self.plate_thickness = self.plate_value = PLATE_DEFAULT
@@ -757,8 +759,9 @@ class Panel(ScreenPanel):
         elif kind == F.PRINT:
             self._screen.snapmaker_calibration_print = True
             # The stock calibration prints skip the nozzle diameter check
-            self._gcode("SDCARD_PRINT_FILE FILENAME=\"%s/%s\" NOZZLE_CHECK=0"
-                        % (F.GCODE_DIR, step["file"]))
+            self._gcode("SNAPMAKER_CAL_MATERIAL MATERIAL=%s\n"
+                        "SDCARD_PRINT_FILE FILENAME=\"%s/%s\" NOZZLE_CHECK=0"
+                        % (self.material, F.GCODE_DIR, step["file"]))
         elif kind == F.RUN:
             if step.get("done_text"):
                 self.step_widgets["text"].set_label(step["done_text"])
@@ -984,7 +987,12 @@ class Panel(ScreenPanel):
         pause = self._button(_("Pause"), "secondary")
         pause.connect("clicked", self._toggle_pause)
         self.step_widgets["pause"] = pause
-        self.step_widgets["extra_buttons"] = [pause]
+        # The test print keeps this page instead of the job status; Back
+        # from Fine Tuning returns here
+        fine = self._button(_("Fine Tuning"), "secondary")
+        fine.connect("clicked", lambda w: self._screen.show_panel(
+            "fine_tune", _("Fine Tuning")))
+        self.step_widgets["extra_buttons"] = [fine, pause]
 
     def _toggle_pause(self, widget):
         state = self._stat("print_stats", "state")
@@ -995,6 +1003,21 @@ class Panel(ScreenPanel):
         load.connect("clicked",
                      lambda w: self._screen.show_panel("extrude"))
         self.step_widgets["extra_buttons"] = [load]
+        # The test prints are sliced for PLA; another material raises the
+        # temperatures (SNAPMAKER_CAL_MATERIAL)
+        box.pack_start(self._label(_("Material")), False, False, 0)
+        group = None
+        for name in F.MATERIALS:
+            radio = Gtk.RadioButton.new_with_label_from_widget(group, name)
+            group = group or radio
+            radio.set_can_focus(False)
+            radio.set_active(name == self.material)
+            radio.connect("toggled", self._choose_material, name)
+            box.pack_start(radio, False, False, 0)
+
+    def _choose_material(self, widget, name):
+        if widget.get_active():
+            self.material = name
 
     def _build_choice(self, step, box):
         # GTK always activates one radio button of a group; an unshown

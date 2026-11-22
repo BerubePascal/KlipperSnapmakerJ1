@@ -200,13 +200,13 @@ M205 J0.010
 
 ; Start: heat both nozzles and print, no nozzle flush
 T0
-M140 S55
-M104 T0 S215
-M104 T1 S210
+_SNAPMAKER_CAL_TEMP CMD=M140 S=55
+_SNAPMAKER_CAL_TEMP CMD=M104 T=0 S=215
+_SNAPMAKER_CAL_TEMP CMD=M104 T=1 S=210
 SNAPMAKER_HOME_IF_NEEDED
-M190 S55
-M109 T0 S215
-M109 T1 S210
+_SNAPMAKER_CAL_TEMP CMD=M190 S=55
+_SNAPMAKER_CAL_TEMP CMD=M109 T=0 S=215
+_SNAPMAKER_CAL_TEMP CMD=M109 T=1 S=210
 G90
 G21
 M83
@@ -234,9 +234,9 @@ G1 X120.800 Y58.800 E3.06909
 G1 E-1 F2400
 G0 Z.6 F600
 ; standby until the change to T1 on layer 2
-M104 T1 S140
+_SNAPMAKER_CAL_TEMP CMD=M104 T=1 S=140
 T0
-M109 S215 T0 ; set nozzle temperature and wait for it to be reached
+_SNAPMAKER_CAL_TEMP CMD=M109 T=0 S=215 ; set nozzle temperature and wait for it to be reached
 ;LAYER_CHANGE
 ;Z:0.2
 ;HEIGHT:0.2
@@ -837,7 +837,7 @@ M73 P37 R7
 ;WIPE_END
 ;_SET_FAN_SPEED_CHANGING_LAYER
 M204 P2000
-M104 S210 T0 ; set nozzle temperature
+_SNAPMAKER_CAL_TEMP CMD=M104 T=0 S=210 ; set nozzle temperature
 ; printing object Offset_X_Y_dual_extruder_1 id:0 copy 0
 G17
 G3 Z.8 I1.159 J.372 P1  F18000
@@ -1252,7 +1252,7 @@ G1 X169.838 Y68.262 E.68509
 G1 X169.302 Y68.262 E.01657
 G1 X153.625 Y83.938 E.68509
 G1 X153.089 Y83.938 E.01657
-M104 S210 T1 ; preheat T1 time: 91s
+_SNAPMAKER_CAL_TEMP CMD=M104 T=1 S=210 ; preheat T1 time: 91s
 G1 X168.766 Y68.262 E.68509
 G1 X168.229 Y68.262 E.01657
 G1 X152.553 Y83.938 E.68509
@@ -2271,7 +2271,7 @@ G1 X148.3 Y76.1 E.08012
 G1 X150.3 Y76.1 E-2
 ;WIPE_END
 ; filament end gcode
-M104 S140 T0 ; set nozzle temperature ;cooldown
+_SNAPMAKER_CAL_TEMP CMD=M104 T=0 S=140 ; set nozzle temperature ;cooldown
 G17
 G3 Z1 I1.217 J0 P1  F18000
 ;***** Update: 20240823
@@ -2290,13 +2290,13 @@ M107 P0 ;fan off T0
 
 
 M2000 S200 V300 A3000 ;quick switch extruders, S:200 mode/V:speed/A:acceleration
-M109 T1 S210 C3 W1 ;wait T1
+_SNAPMAKER_CAL_TEMP CMD=M109 T=1 S=210 ;wait T1
 
   M106 P1 S255 ;restore fan speed for T1
 
 M106 S255
 ; Filament gcode
-M109 S210 T1 ; set nozzle temperature and wait for it to be reached
+_SNAPMAKER_CAL_TEMP CMD=M109 T=1 S=210 ; set nozzle temperature and wait for it to be reached
 ; printing object Offset_X_Y_dual_extruder_1 id:0 copy 0
 G1 E-1 F2400
 G1 X141.61 Y128.99 F18000
@@ -3534,7 +3534,7 @@ G1 X130.843 Y118.8 E.0057
 ;WIDTH:0.401363
 G1 X134.7 Y118.8 E.11265
 ;WIDTH:0.4
-M104 S210 T0 ; preheat T0 time: 90s
+_SNAPMAKER_CAL_TEMP CMD=M104 T=0 S=210 ; preheat T0 time: 90s
 G1 X134.7 Y119.2 E.01164
 G1 X130.857 Y119.2 E.11182
 ;WIDTH:0.419999
@@ -5984,7 +5984,7 @@ G1 X188.9 Y71 E.07041
 G1 X190.9 Y71 E-2
 ;WIPE_END
 ; filament end gcode
-M104 S140 T1 ; set nozzle temperature ;cooldown
+_SNAPMAKER_CAL_TEMP CMD=M104 T=1 S=140 ; set nozzle temperature ;cooldown
 G17
 G3 Z1.2 I1.217 J0 P1  F18000
 ;***** Update: 20240823
@@ -6003,13 +6003,13 @@ M107 P1 ;fan off T1
 
 
 M2000 S200 V300 A3000 ;quick switch extruders, S:200 mode/V:speed/A:acceleration
-M109 T0 S210 C3 W1 ;wait T0
+_SNAPMAKER_CAL_TEMP CMD=M109 T=0 S=210 ;wait T0
 
   M106 P0 S255 ;restore fan speed for T0
 
 M106 S255
 ; Filament gcode
-M109 S210 T0 ; set nozzle temperature and wait for it to be reached
+_SNAPMAKER_CAL_TEMP CMD=M109 T=0 S=210 ; set nozzle temperature and wait for it to be reached
 ; printing object Offset_X_Y_dual_extruder_1 id:0 copy 0
 G1 X138.1 Y104.127
 G1 Z.8
@@ -6852,12 +6852,12 @@ G0 E-10 F200
 G28
 
 
-M104 T0 S0
+_SNAPMAKER_CAL_TEMP CMD=M104 T=0 S=0
   
 
-M104 T1 S0
+_SNAPMAKER_CAL_TEMP CMD=M104 T=1 S=0
   
-M140 S0
+_SNAPMAKER_CAL_TEMP CMD=M140 S=0
 M107
 M220 S100
 M84

@@ -36,6 +36,9 @@ GCODE_DIR = 'snapmaker_j1'
 # model (left extruder frame, right extruder combs, 0.1 mm per line),
 # sliced for the J1 by the user (see docs)
 XY_TEST_FILE = 'snapmaker_xy_offset_test.gcode'
+# Materials of the test prints (SNAPMAKER_CAL_MATERIAL); the files are
+# sliced for the first one
+MATERIALS = ['PLA', 'PETG', 'ABS']
 
 def _step(kind, title, text, image=None, **kw):
     s = {'kind': kind, 'title': title, 'text': text, 'image': image}
@@ -97,8 +100,9 @@ def build():
     def load(image):
         return _step(
             LOAD, _("Load Filament"),
-            _("Tap Go to Load to load two PLA filaments of clearly different"
-              " colors (for example orange and white).\n\nIf the filaments"
+            _("Tap Go to Load to load two filaments of the same material"
+              " and clearly different colors (for example orange and"
+              " white), and choose their material.\n\nIf the filaments"
               " are already loaded, tap Next."), image)
 
     flows = {

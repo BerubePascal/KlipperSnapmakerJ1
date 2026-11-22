@@ -366,6 +366,14 @@ after changing a hotend:
 
 Run Vibration Compensation once, and again after mechanical changes.
 
+**Material of the test prints.** The test prints are sliced for PLA. On
+the Load Filament page you choose PLA, PETG or ABS; for PETG the
+nozzles print 30 °C hotter and the bed is at 75 °C, for ABS 40 °C
+hotter and 90 °C.  The standby temperature of the waiting nozzle rises
+by the same amount.  While a test print runs, **Fine Tuning** next to
+Pause opens the fine tuning page (Z offset, speed, flow); Back returns to
+the calibration.
+
 **How the steps work.**
 - Each step shows a picture or animation, the instructions and its number
   (for example 2/6).
@@ -500,7 +508,7 @@ on the scales how far the right nozzle is off and enter the values.
 
 <table>
 <tr><td><img src="manual/xym-1-prepare.png" width="420"><br>1. Install the glass plate and confirm.</td>
-<td><img src="manual/xym-2-load.png" width="420"><br>2. Load two PLA filaments of clearly different colors (Go to Load), or tap Next if they are loaded.</td></tr>
+<td><img src="manual/xym-2-load.png" width="420"><br>2. Load two filaments of the same material and clearly different colors (Go to Load), or tap Next if they are loaded, and choose their material (PLA, PETG or ABS).</td></tr>
 <tr><td><img src="manual/xym-3-print.png" width="420"><br>3. The test print runs; Pause and Quit are available. Next becomes available when it has finished.</td>
 <td><img src="manual/xym-4-read.png" width="420"><br>4. Read the scales: each line is 0.1 mm.</td></tr>
 <tr><td><img src="manual/xym-5-enter.png" width="420"><br>5. Enter the X and Y values (here the second example, X -0.3, Y -0.2). Next applies them.</td>
@@ -528,7 +536,7 @@ offset calibrations.
 
 <table>
 <tr><td><img src="manual/check-1-plate.png" width="420"><br>1. Make sure the glass plate is installed.</td>
-<td><img src="manual/check-2-load.png" width="420"><br>2. Load two PLA filaments of different colors.</td></tr>
+<td><img src="manual/check-2-load.png" width="420"><br>2. Load two filaments of the same material and different colors, and choose their material.</td></tr>
 <tr><td><img src="manual/check-3-print.png" width="420"><br>3. The check model is printed.</td>
 <td><img src="manual/check-4-z.png" width="420"><br>4. Z check: the differently colored surfaces must be flush with each other.</td></tr>
 <tr><td><img src="manual/check-5-xy.png" width="420"><br>5. XY check: take the model off and try to break off the four outer squares. If all four can be broken off (not necessarily completely), the XY offset is good.</td>
@@ -546,7 +554,7 @@ The J1 has no accelerometer.
 
 <table>
 <tr><td><img src="manual/vib-1-plate.png" width="420"><br>1. Make sure the glass plate is installed.</td>
-<td><img src="manual/vib-2-load.png" width="420"><br>2. Load filament.</td></tr>
+<td><img src="manual/vib-2-load.png" width="420"><br>2. Load filament and choose its material.</td></tr>
 <tr><td><img src="manual/vib-3-print.png" width="420"><br>3. The test model is printed. It has four areas, each printed with another compensation frequency (80, 65, 50 and 35 Hz).</td>
 <td><img src="manual/vib-4-areas.png" width="420"><br>4. On the X and the Y side of the model, find the area with the least visible vertical ripples.</td></tr>
 <tr><td><img src="manual/vib-5-y.png" width="420"><br>5. Choose the best area of the Y side.</td>

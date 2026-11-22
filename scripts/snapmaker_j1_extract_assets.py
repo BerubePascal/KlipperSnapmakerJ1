@@ -72,6 +72,31 @@ def density_rank(path):
 # below the lowest plausible calibrated endstop.
 TRAVEL_LIMITS = {0: ((-13., 324.), (0., 202.)), 1: ((0., 337.), (0., 202.))}
 
+TEMP_LINE = re.compile(br'^(M104|M109|M140|M190)((?:[ \t]+[A-Z][-\d.]*)*)'
+                       br'[ \t]*(;.*)?$')
+
+def temp_line(line):
+    # Temperature commands go through _SNAPMAKER_CAL_TEMP, which adapts
+    # the PLA temperatures of the file to the chosen material
+    # (SNAPMAKER_CAL_MATERIAL); other parameters (C, W) are dropped
+    body = line.rstrip(b'\r\n')
+    m = TEMP_LINE.match(body)
+    if not m:
+        return line
+    params = {w[:1]: w[1:] for w in m.group(2).split()}
+    if b'S' not in params:
+        return line
+    out = b'_SNAPMAKER_CAL_TEMP CMD=' + m.group(1)
+    if b'T' in params:
+        out += b' T=' + params[b'T']
+    out += b' S=' + params[b'S']
+    if m.group(3):
+        out += b' ' + m.group(3)
+    return out + line[len(body):]
+
+assert temp_line(b'M109 T1 S210 C3 W1 ;wait\r\n') == (
+    b'_SNAPMAKER_CAL_TEMP CMD=M109 T=1 S=210 ;wait\r\n')
+
 def adapt_gcode(data):
     # Travel moves clamped as above; G28 of the start G-code homes only
     # when needed, as the stock firmware does at the start of a print (the
@@ -102,7 +127,7 @@ def adapt_gcode(data):
                     value = min(max(float(m.group(1)), low), high)
                     return axis + (b'%g' % (value,))
                 line = re.sub(axis + br'(-?\d+\.?\d*)', clamp, line, count=1)
-        out.append(line)
+        out.append(temp_line(line))
     return b''.join(out)
 
 def main():
