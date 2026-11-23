@@ -624,6 +624,12 @@ results are stored without Save Config.
 - **Dim after / Dim to:** like the stock firmware, the case light dims
   after a time without touching the screen, and returns to its step at
   the next touch.
+- **Dim after / Dim to during a print:** other values while a print
+  runs, for example a longer time or Never and a brighter step, so the
+  print stays visible in the webcam.  "As without print" uses the
+  values above.  When a print starts or ends, the light returns to its
+  step and the time starts again.  With the same time as the screen
+  (Display), the case light dims at the moment the screen switches off.
 - **Display:** the screen power settings.  The screen switches off after
   15 minutes without touch, both while idle and while printing, as on the
   stock firmware.  A touch switches it on again.

@@ -12,6 +12,11 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
 
 ## Unreleased
 
+- **Case light during a print:** More → Light has "Dim after during a
+  print" and "Dim to during a print", for example to keep the print lit
+  for the webcam.  The default "As without print" keeps the current
+  behavior.  With the same time as the screen, the case light dims
+  together with it.
 - **Stable Mainsail connection over WLAN:** Wi-Fi power saving is
   switched off.  It delayed packets (pings up to 111ms instead of
   21ms) and Mainsail lost its connection during prints.  The add-on

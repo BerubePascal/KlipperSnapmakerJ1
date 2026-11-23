@@ -520,6 +520,11 @@ def _patch_screensaver(screen):
         result = show(self, *args)
         if self.is_showing:
             _set_backlight(BL_POWER_OFF)
+            # The case light dims with the display when both have the
+            # same time (one timer, so they go dark together)
+            case_light = getattr(self.screen, "snapmaker_case_light", None)
+            if case_light is not None:
+                case_light.screen_blanked()
         return result
 
     def _close(self, *args):

@@ -5,7 +5,7 @@
 # This file may be distributed under the terms of the GNU GPLv3 license.
 #
 # The case light in four steps, dimmed after a time without touch as the
-# screen saver blanks the display, and the display settings of
+# screen saver blanks the display (with own values during a print), and the display settings of
 # KlipperScreen (the add-on removes them from the settings panel).
 import logging
 
@@ -27,6 +27,12 @@ LEVELS = (0., .02, .5, 1.)
 # Minutes without touch before the case light dims, 0 for never
 DIM_DELAYS = (0, 1, 2, 5, 15, 30, 60, 120)
 DIM_DELAY_DEFAULT, DIM_LEVEL_DEFAULT = 0, 1
+# During a print other values may apply (eg brighter for the webcam); this
+# value means the same as without a print
+SAME = -1
+PRINTING_STATES = ("printing", "paused")
+# Seconds between checks whether a print started or ended
+PRINT_CHECK_DELAY = 5
 # Options of KlipperScreen for the display, shown here instead of in the
 # settings panel
 DISPLAY_OPTIONS = ("screen_blanking", "screen_blanking_printing",
@@ -60,6 +66,8 @@ class CaseLight:
         self.dim_timer = None
         self.idle = False
         self.listener = None
+        self.printing = False
+        GLib.timeout_add_seconds(PRINT_CHECK_DELAY, self._check_printing)
         # Every touch, also the one that ends the screen saver
         self.gesture = Gtk.GestureMultiPress.new(screen)
         self.gesture.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
@@ -122,6 +130,25 @@ class CaseLight:
         if self.listener is not None:
             self.listener()
 
+    def _setting(self, name, default):
+        # The value during a print, unless it is the same as without
+        if self.printing:
+            value = settings.get(name + "_printing", SAME)
+            if value != SAME:
+                return value
+        return settings.get(name, default)
+
+    def _check_printing(self):
+        # A print that starts or ends counts as a touch: the light comes
+        # back and the delay of the new state starts
+        printer = self.screen.printer
+        printing = (printer is not None and printer.get_stat(
+            "print_stats", "state") in PRINTING_STATES)
+        if printing != self.printing:
+            self.printing = printing
+            self.activity()
+        return True
+
     def _touched(self, *args):
         self.activity()
 
@@ -137,9 +164,19 @@ class CaseLight:
             # Unless it was set elsewhere in the meantime
             if self.available() and self.level() == dimmed:
                 self._set(before)
-        delay = settings.get("light_dim_delay", DIM_DELAY_DEFAULT)
-        if delay:
+        delay = self._setting("light_dim_delay", DIM_DELAY_DEFAULT)
+        if delay and not self._synced(delay):
             self.dim_timer = GLib.timeout_add_seconds(delay * 60, self._dim)
+
+    def _synced(self, delay):
+        # The same time as the display: the screen saver dims the light
+        # (screen_blanked), so both go dark at the same moment
+        return delay > 0 and self.screen.blanking_time == delay * 60
+
+    def screen_blanked(self):
+        if not self.idle and self._synced(
+                self._setting("light_dim_delay", DIM_DELAY_DEFAULT)):
+            self._dim()
 
     def klipper_ready(self):
         # A Klipper restart sets the chosen step again, a light dimmed
@@ -157,7 +194,7 @@ class CaseLight:
         self.idle = True
         if self.available():
             level = self.level()
-            dimmed = settings.get("light_dim_level", DIM_LEVEL_DEFAULT)
+            dimmed = self._setting("light_dim_level", DIM_LEVEL_DEFAULT)
             if dimmed < level:
                 self._set(dimmed)
                 self.dimmed = (level, dimmed)
@@ -185,6 +222,20 @@ class Panel(ScreenPanel):
                 _("Dim to"), None, [(names[i], i) for i in range(len(LEVELS))],
                 settings.get("light_dim_level", DIM_LEVEL_DEFAULT),
                 self._dim_level_changed))
+            same = [(_("As without print"), SAME)]
+            box.add(self._dropdown(
+                _("Dim after during a print"),
+                _("For example longer or never, to watch the print with the"
+                  " webcam"),
+                same + [(_("Never") if m == 0 else "%d min" % m, m)
+                        for m in DIM_DELAYS],
+                settings.get("light_dim_delay_printing", SAME),
+                self._dim_delay_changed, "light_dim_delay_printing"))
+            box.add(self._dropdown(
+                _("Dim to during a print"), None,
+                same + [(names[i], i) for i in range(len(LEVELS))],
+                settings.get("light_dim_level_printing", SAME),
+                self._dim_level_changed, "light_dim_level_printing"))
         box.add(self._heading(_("Display")))
         self.labels["display"] = Gtk.Grid()
         box.add(self.labels["display"])
@@ -253,24 +304,24 @@ class Panel(ScreenPanel):
         row.add(line)
         return row
 
-    def _dropdown(self, name, tooltip, items, active, callback):
+    def _dropdown(self, name, tooltip, items, active, callback, *args):
         row = self._row(name, tooltip)
         dropdown = Gtk.ComboBoxText(valign=Gtk.Align.CENTER)
         for i, (text, value) in enumerate(items):
             dropdown.append(str(value), text)
             if value == active:
                 dropdown.set_active(i)
-        dropdown.connect("changed", callback)
+        dropdown.connect("changed", callback, *args)
         chooser.attach(self._screen, dropdown, name)
         row.add(dropdown)
         return row
 
-    def _dim_delay_changed(self, dropdown):
-        settings.save("light_dim_delay", int(dropdown.get_active_id()))
+    def _dim_delay_changed(self, dropdown, name="light_dim_delay"):
+        settings.save(name, int(dropdown.get_active_id()))
         self.light.activity()
 
-    def _dim_level_changed(self, dropdown):
-        settings.save("light_dim_level", int(dropdown.get_active_id()))
+    def _dim_level_changed(self, dropdown, name="light_dim_level"):
+        settings.save(name, int(dropdown.get_active_id()))
 
     def _slider_tapped(self, gesture, n_press, x, y):
         trough = self.scale.get_range_rect()

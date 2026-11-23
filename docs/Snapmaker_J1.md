@@ -824,7 +824,13 @@ dimmed the screen to 10% and showed print status.
 "More → Light" (also in the print menu) replaces the generic Pins panel:
 the case light in four steps (off, low 2%, medium 50%, max), dimmed to a
 chosen step after a time without touch on the display and back to its
-step at the next touch, and the display settings of KlipperScreen
+step at the next touch (during a print with values of its own,
+`light_dim_delay_printing` and `light_dim_level_printing`, -1 for the
+same as without a print; the add-on checks every 5 s whether a print
+started or ended, which counts as a touch; with the same time as the
+screen blanking the light dims when KlipperScreen shows its screen
+saver instead of by a timer of its own, so both go dark together), and
+the display settings of KlipperScreen
 (screen power off times, wake delay, DPMS), which the add-on removes
 from the KlipperScreen settings.  While Klipper is busy (heating,
 homing) the slider keeps the new step with a busy indicator and the
