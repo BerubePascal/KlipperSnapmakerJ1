@@ -987,12 +987,16 @@ class Panel(ScreenPanel):
         pause = self._button(_("Pause"), "secondary")
         pause.connect("clicked", self._toggle_pause)
         self.step_widgets["pause"] = pause
+        self.step_widgets["extra_buttons"] = [pause]
         # The test print keeps this page instead of the job status; Back
-        # from Fine Tuning returns here
+        # from Fine Tuning returns here.  Below the progress: a fourth
+        # button would push Next off the bottom bar
         fine = self._button(_("Fine Tuning"), "secondary")
+        fine.set_halign(Gtk.Align.START)
+        fine.set_margin_top(self._dp(24))
         fine.connect("clicked", lambda w: self._screen.show_panel(
             "fine_tune", _("Fine Tuning")))
-        self.step_widgets["extra_buttons"] = [fine, pause]
+        box.pack_start(fine, False, False, 0)
 
     def _toggle_pause(self, widget):
         state = self._stat("print_stats", "state")
@@ -1005,7 +1009,9 @@ class Panel(ScreenPanel):
         self.step_widgets["extra_buttons"] = [load]
         # The test prints are sliced for PLA; another material raises the
         # temperatures (SNAPMAKER_CAL_MATERIAL)
-        box.pack_start(self._label(_("Material")), False, False, 0)
+        # One row, so the page keeps its button bar on the screen
+        row = Gtk.Box(spacing=self._dp(16))
+        row.pack_start(Gtk.Label(label=_("Material")), False, False, 0)
         group = None
         for name in F.MATERIALS:
             radio = Gtk.RadioButton.new_with_label_from_widget(group, name)
@@ -1013,7 +1019,8 @@ class Panel(ScreenPanel):
             radio.set_can_focus(False)
             radio.set_active(name == self.material)
             radio.connect("toggled", self._choose_material, name)
-            box.pack_start(radio, False, False, 0)
+            row.pack_start(radio, False, False, 0)
+        box.pack_start(row, False, False, 0)
 
     def _choose_material(self, widget, name):
         if widget.get_active():
