@@ -17,7 +17,7 @@ implemented, configuration) see [Snapmaker_J1.md](Snapmaker_J1.md).
 
 - [First start: connect the WLAN and calibrate](#first-start-connect-the-wlan-and-calibrate)
 - [The screen at a glance](#the-screen-at-a-glance)
-- [Service](#service)
+- [Home page](#home-page)
 - [Printing](#printing)
 - [Temperature](#temperature)
 - [Move](#move)
@@ -63,83 +63,91 @@ implemented, configuration) see [Snapmaker_J1.md](Snapmaker_J1.md).
 
 ## The screen at a glance
 
-![Main menu](manual/main-menu.png)
+![Home page](manual/main-menu.png)
 
-**Title bar.** The current temperatures of the left nozzle (0), the right
-nozzle (1) and the heated bed, the title of the page, the WLAN symbol and
-the clock.  The WLAN symbol shows the signal strength: the more bars are
-orange, the better the signal; without a connection the symbol is grey.
-Tap it to see the network, the signal, the IP address and the address
-of the [web interface](#web-interface); **WLAN** there opens the WLAN
-page.
+**Title bar.** The WLAN symbol and the clock; on the other pages also
+the current temperatures of the left nozzle (0), the right nozzle (1)
+and the heated bed, and the title of the page; on the home page the
+state of the printer: Ready, Heating (a heater that is on is not hot
+yet), what a button of the home page started while it runs (eg
+Loading T0, Homing, Distributing grease) or Busy (a command from
+elsewhere, eg the web interface).  The WLAN symbol shows
+the signal strength: the more bars are orange, the better the signal;
+without a connection the symbol is grey.  Tap it to see the network,
+the signal, the IP address and the address of the
+[web interface](#web-interface); **WLAN** there opens the WLAN page.
 
 <img src="manual/wlan-info.png" width="420">
 
 **Action bar (left).**
 - **Back:** returns to the previous page.
-- **Circle:** returns to the main menu.
+- **Circle:** returns to the home page.
+- **Gear** (home page only): opens the menu ([More](#more)), with
+  Temperature and Extrude among its entries.
 - **Bell:** opens the notifications, for example messages from Klipper.
-- **Wrench** (main menu only): opens the [Service](#service) page.
 
 During a print the action bar also shows the emergency stop.  There is no
 shutdown button: the J1 is switched off with its power switch.
 
-**Main menu.**
-- **Left:** the heaters with their current temperatures and a graph of
-  the last minutes.  Tap a heater to set its temperature.
-- **Right:** the six main entries, in the order of a print: the print
-  itself first, then preparing it, the setup and More last.
-
-| Entry | Content |
-| --- | --- |
-| Print | files on the printer |
-| Temperature | heat, cool down, material presets |
-| Extrude | load, unload, extrude, filament sensors, pressure advance |
-| Move | home and move the axes, switch the active toolhead |
-| Calibration | the J1 calibration menu |
-| More | settings, fans, light, network, updates, console, system |
-
 The left nozzle is called **Left Nozzle** (T0, `extruder`) and the right
 one **Right Nozzle** (T1, `extruder1`).
 
-## Service
+## Home page
 
-![Service page](manual/service.png)
-
-The wrench button in the action bar of the main menu opens a page for
-service work: changing filament, cleaning the nozzles, lubricating the
-axes.  It heats without blocking the printer, so other commands still
-work while the nozzles heat up.
+The home page has everything for the daily work on one page: heating,
+changing filament, the service tasks and the way to a print.  It heats
+without blocking the printer, so other commands still work while the
+nozzles heat up.  During a print the screen shows the print page
+instead.
 
 **Heaters** (one row each):
-- **Tile** with the name and the current temperature; a tap sets the
-  target, as the target button does.
-- **Target:** tap to enter it.  The page keeps it, also after a restart:
-  220°C for the nozzles and 60°C for the bed by default.
-- **ON / OFF:** switches the heater to its target or off.  A heater that
-  is on has an orange frame; a new target applies at once.
-- **Load / Unload** (nozzles): available once the nozzle is on and
-  within 3°C of its target.  Load feeds 60 mm at 240 mm/min, Unload
-  pushes 5 mm and pulls 80 mm back.  The nozzle stays hot for another
-  run.  **Load Both / Unload Both** (beside the bed) move both
-  extruders at once; two single buttons pressed one after the other run
-  one after the other, as Klipper moves one thing at a time.  Loading
-  and unloading move both nozzles to the nozzle service position first,
-  so the filament falls on the build plate.
+- **Tile** with the name, the nozzle diameter, the current temperature
+  and below it the target (→ 230°C; while the heater is on the one it
+  really heats to, also when a print or the web interface set it).  Tap it to change the target: the
+  keypad shows the current one in grey, and the first digit typed
+  replaces it (whole degrees; ✓ alone keeps it).  Beside it the
+  material presets (PLA, ABS, PETG, FLEX) as tiles set it with one tap.  Back
+  closes the keypad.
+  The page keeps the target, also after a restart: 220°C for the
+  nozzles and 60°C for the bed by default.
+- **ON / OFF** (the right end of the tile): switches the heater to its
+  target or off.  A heater that is on has an orange frame around the
+  tile; a new target applies at once.
 
-**Bottom row:**
+**Filament** (T0, T1 and Both): **Load / Unload** are available (grey
+before; a tap then says what is missing) once the
+nozzle is on and at most 5°C below its target.  Load feeds 60 mm at
+320 mm/min, Unload pushes 5 mm and pulls 80 mm back.  The nozzle stays
+hot for another run.  **Both** moves both extruders at once; two single
+buttons pressed one after the other run one after the other, as Klipper
+moves one thing at a time.  Loading and unloading move both nozzles to
+the nozzle service position first, so the filament falls on the build
+plate.  Other lengths and speeds: [Extrude](#extrude-and-filament) in
+the menu.
+
+**Controls** (the two switches that turn something off are framed in
+red at the end):
+- **Home All:** homes all axes after a confirmation.
 - **Nozzle Service:** moves both nozzles 75 mm in from their parking
   positions, clear of the parts there and about 200 mm apart, with the
   bed at least 100 mm below them (homing first if needed).  The button
   then reads **Park Nozzles** and parks them again.  It does not switch
   any heater.
-- **Home All:** homes all axes.
 - **Distribute Grease:** after lubricating the rails and lead screws,
   moves both nozzles, the bed and the Z axis once over their travel
   (about a minute; down to 10 mm above the build plate).  The build
   plate has to be empty.  Tap again for another run.
-- **Fine Tuning:** opens [Fine Tuning](#limits-and-fine-tuning).
-- **All Off:** switches all heaters off.
+- **Light:** opens the [Light](#light) page: brightness of the case
+  light, dimming and the screen.  (Fine Tuning is on the print page and
+  in the menu.)
+- **Motors Off:** switches the stepper motors off after a
+  confirmation, so the nozzles and the bed can be moved by hand.  Home
+  again before the next move.
+- **Heaters Off:** switches all heaters off.
+
+**Bottom row:** **Print** (files on the printer), **Move** (home and
+move the axes, switch the active toolhead) and **Calibration** (the J1
+calibration menu).
 
 ## Printing
 
@@ -275,8 +283,10 @@ Check that the print is still on the plate before you resume.
 
 ![Temperature](manual/temperature.png)
 
-- **Heaters:** tap one or more heaters, then enter a temperature or choose
-  a preset.
+- **Heaters:** as on the [home page](#home-page): an orange frame
+  means the heater is on, **ON/OFF** switches it (on to the target the
+  home page keeps).  Tap the name of one or more heaters (tinted when
+  selected), then tap the temperature to enter one or choose a preset.
 - **Presets:** each one heats both nozzles and the bed:
 
   | Preset | Nozzles | Bed |
@@ -286,7 +296,7 @@ Check that the print is still on the plate before you resume.
   | PETG | 240 °C | 80 °C |
   | FLEX | 210 °C | 60 °C |
 
-- **Cooldown:** turns all heaters off.
+- **Heaters Off:** turns all heaters off.
 
 The nozzles can be set up to 300 °C and the bed up to 100 °C, as on the
 stock firmware.  The PT100 sensors and the heater limits are those of the
@@ -311,8 +321,8 @@ stock firmware.
   speed.
 - **Load and Unload:** use the active nozzle at the print temperature
   (220 °C when it is colder than 170 °C), homing first if needed.
-  Loading feeds at 240 mm/min, as the stock refill dialog.  Both
-  nozzles at once: [Service](#service) page.
+  Loading feeds at 320 mm/min (stock: 240).  Both
+  nozzles at once: [home page](#home-page).
 - **Left Filament / Right Filament:** switch the filament sensors on or
   off.  The setting is kept after a restart.
 
@@ -350,6 +360,10 @@ animations.  It adds two entries: PID Auto Tune and Build Plate.
   with the nozzle contact sensors, and the manual workflow with the
   calibration card.  It is available for Heated Bed Leveling, Z Offset
   Calibration and XY Offset Calibration.  The choice is kept.
+  Use the manual workflow with coated nozzles: the coating can keep the
+  contact sensor from detecting the bed or the calibration feature.  An
+  assisted calibration stops with "No nozzle contact" when a nozzle does
+  not detect the contact within a few millimetres.
 - **Start:** starts the calibration.
 
 **Recommended order** (as on the stock display), for a new printer or
@@ -361,6 +375,14 @@ after changing a hotend:
 4. Offset Calibration Check
 
 Run Vibration Compensation once, and again after mechanical changes.
+
+**Material of the test prints.** The test prints are sliced for PLA. On
+the Load Filament page you choose PLA, PETG or ABS; for PETG the
+nozzles print 30 °C hotter and the bed is at 75 °C, for ABS 40 °C
+hotter and 90 °C.  The standby temperature of the waiting nozzle rises
+by the same amount.  While a test print runs, **Fine Tuning** next to
+Pause opens the fine tuning page (Z offset, speed, flow); Back returns to
+the calibration.
 
 **How the steps work.**
 - Each step shows a picture or animation, the instructions and its number
@@ -496,7 +518,7 @@ on the scales how far the right nozzle is off and enter the values.
 
 <table>
 <tr><td><img src="manual/xym-1-prepare.png" width="420"><br>1. Install the glass plate and confirm.</td>
-<td><img src="manual/xym-2-load.png" width="420"><br>2. Load two PLA filaments of clearly different colors (Go to Load), or tap Next if they are loaded.</td></tr>
+<td><img src="manual/xym-2-load.png" width="420"><br>2. Load two filaments of the same material and clearly different colors (Go to Load), or tap Next if they are loaded, and choose their material (PLA, PETG or ABS).</td></tr>
 <tr><td><img src="manual/xym-3-print.png" width="420"><br>3. The test print runs; Pause and Quit are available. Next becomes available when it has finished.</td>
 <td><img src="manual/xym-4-read.png" width="420"><br>4. Read the scales: each line is 0.1 mm.</td></tr>
 <tr><td><img src="manual/xym-5-enter.png" width="420"><br>5. Enter the X and Y values (here the second example, X -0.3, Y -0.2). Next applies them.</td>
@@ -524,7 +546,7 @@ offset calibrations.
 
 <table>
 <tr><td><img src="manual/check-1-plate.png" width="420"><br>1. Make sure the glass plate is installed.</td>
-<td><img src="manual/check-2-load.png" width="420"><br>2. Load two PLA filaments of different colors.</td></tr>
+<td><img src="manual/check-2-load.png" width="420"><br>2. Load two filaments of the same material and different colors, and choose their material.</td></tr>
 <tr><td><img src="manual/check-3-print.png" width="420"><br>3. The check model is printed.</td>
 <td><img src="manual/check-4-z.png" width="420"><br>4. Z check: the differently colored surfaces must be flush with each other.</td></tr>
 <tr><td><img src="manual/check-5-xy.png" width="420"><br>5. XY check: take the model off and try to break off the four outer squares. If all four can be broken off (not necessarily completely), the XY offset is good.</td>
@@ -542,7 +564,7 @@ The J1 has no accelerometer.
 
 <table>
 <tr><td><img src="manual/vib-1-plate.png" width="420"><br>1. Make sure the glass plate is installed.</td>
-<td><img src="manual/vib-2-load.png" width="420"><br>2. Load filament.</td></tr>
+<td><img src="manual/vib-2-load.png" width="420"><br>2. Load filament and choose its material.</td></tr>
 <tr><td><img src="manual/vib-3-print.png" width="420"><br>3. The test model is printed. It has four areas, each printed with another compensation frequency (80, 65, 50 and 35 Hz).</td>
 <td><img src="manual/vib-4-areas.png" width="420"><br>4. On the X and the Y side of the model, find the area with the least visible vertical ripples.</td></tr>
 <tr><td><img src="manual/vib-5-y.png" width="420"><br>5. Choose the best area of the Y side.</td>
@@ -612,6 +634,12 @@ results are stored without Save Config.
 - **Dim after / Dim to:** like the stock firmware, the case light dims
   after a time without touching the screen, and returns to its step at
   the next touch.
+- **Dim after (Printing) / Dim to (Printing):** other values while a print
+  runs, for example a longer time or Never and a brighter step, so the
+  print stays visible in the webcam.  "As without print" uses the
+  values above.  When a print starts or ends, the light returns to its
+  step and the time starts again.  With the same time as the screen
+  (Display), the case light dims at the moment the screen switches off.
 - **Display:** the screen power settings.  The screen switches off after
   15 minutes without touch, both while idle and while printing, as on the
   stock firmware.  A touch switches it on again.
@@ -1081,6 +1109,11 @@ addresses).
 
 3. **Save & Restart**.  The next print sends "started".
 
+<img src="manual/ntfy-app.jpg" width="300" alt="Messages of the printer in the ntfy app on a phone">
+
+Example in the ntfy app: a print started, stopped with an error, started
+again and cancelled.
+
 Leave out events you don't want in `events`, or add `resumed`.  To switch
 the messages off, delete the lines again.  `moonraker.conf` is yours: the
 updates of KlipperSnapmakerJ1 do not change it.
@@ -1110,7 +1143,7 @@ Y 100**, not at X 150.  The J1 profiles of OrcaSlicer have it so
 | Printing | IDEX, duplication, mirror and backup mode from the file or chosen on the touch screen or in the browser, with the model moved in X; tool changes with parking; pause and resume with parking, priming and wiping |
 | Print start | nozzle diameter check against the installed nozzles, retraction warning above 2 mm |
 | Filament | motion sensors on both toolheads, runout and change dialog, load and unload beside the wipers |
-| Service | service page: heaters on/off with kept targets, load and unload (both at once), nozzle service position, homing, grease distribution |
+| Home page | heaters on/off with kept targets, load and unload (both at once), nozzle service position, homing, grease distribution, motors and heaters off, Print, Move, Calibration |
 | Power loss | recovery of the interrupted print, offered on the screen at the next start |
 | Calibration | bed leveling, Z offset, XY offset (assisted and manual), offset check, vibration compensation, PID auto tune, build plate thickness |
 | Results | stored at once, no restart or Save Config |

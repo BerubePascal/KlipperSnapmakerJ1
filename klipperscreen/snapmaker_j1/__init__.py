@@ -5,6 +5,7 @@
 # This file may be distributed under the terms of the GNU GPLv3 license.
 import logging
 import os
+import subprocess
 from math import pi
 
 import gi
@@ -36,7 +37,10 @@ MENU_ORDER = {
     ("__main", ""): ("print", "temperature", "extrude", "move",
                      "snapmaker_calibration", "more"),
     # Printing, settings of the printer, tools and maintenance
-    ("__main", "more"): ("fine_tune", "limits", "fan", "snapmaker_pause",
+    # The home page shows Print, Move and Calibration; Temperature (the
+    # presets) and Extrude (any length) are here
+    ("__main", "more"): ("temperature", "extrude", "fine_tune", "limits",
+                         "fan", "snapmaker_pause",
                          "snapmaker_light", "snapmaker_datetime",
                          "snapmaker_network", "settings",
                          "macros", "console", "updater", "system"),
@@ -65,8 +69,26 @@ STOPPED_STATES = ("shutdown", "error")
 SHUTDOWN_HINT = "Once the underlying issue is corrected"
 
 
+WIFI_CONF = "/etc/NetworkManager/conf.d/90-snapmaker-j1-wifi-powersave.conf"
+WIFI_SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
+                           "..", "scripts", "snapmaker_j1_wifi.sh")
+
+
+def _wifi_power_save_off():
+    # Systems installed before the OS switched Wi-Fi power saving off get
+    # the setting once (it made Mainsail lose its connection)
+    if os.path.exists(WIFI_CONF):
+        return
+    try:
+        subprocess.Popen(["sudo", "-n", "bash", os.path.realpath(WIFI_SCRIPT)],
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except OSError:
+        logging.exception("Switching Wi-Fi power saving off")
+
+
 def init(screen):
     _reset_font_size(screen)
+    _wifi_power_save_off()
     # Provide the calibration panel without adding files to KlipperScreen
     load_panel = screen._load_panel
 
@@ -85,7 +107,9 @@ def init(screen):
             return light
         if panel == STOCK_PANEL:
             return stock
-        if panel == service.PANEL:
+        # The home page replaces KlipperScreen's main menu (its old name
+        # snapmaker_service still opens it)
+        if panel in (service.PANEL, "main_menu"):
             return service
         module = load_panel(panel)
         if panel == "job_status":
@@ -110,6 +134,8 @@ def init(screen):
             _patch_updater(screen, module.Panel)
         elif panel == "gcodes":
             print_mode.patch_gcodes(screen, module.Panel)
+        elif panel == "temperature":
+            _patch_temperature(module.Panel)
         return module
 
     screen._load_panel = _load_panel
@@ -136,6 +162,8 @@ def init(screen):
     # automatic switch to the job status (and back to the main menu when
     # the print ends) is suppressed while one of them runs
     screen.snapmaker_calibration_print = False
+    # The extrude panel was opened by a pause (closed when the print ends)
+    screen.snapmaker_pause_extrude = False
     state_printing = screen.state_printing
     state_ready = screen.state_ready
 
@@ -153,6 +181,13 @@ def init(screen):
             state_printing()
 
     def _state_ready(wait=True):
+        # A pause that ended the print (cancelled from the paused state, eg
+        # in Mainsail): the extrude panel of the pause goes, the print page
+        # with the result shows again
+        if (screen.snapmaker_pause_extrude and screen._cur_panels
+                and screen._cur_panels[-1] == "extrude"):
+            screen._menu_go_back()
+        screen.snapmaker_pause_extrude = False
         screen.snapmaker_case_light.klipper_ready()
         screen.snapmaker_update_notice.klipper_ready()
         screen.snapmaker_addon_reload.klipper_ready()
@@ -188,6 +223,7 @@ def init(screen):
                 # would put its extrude panel over it)
                 if not screen.snapmaker_calibration_print:
                     state_paused()
+                    screen.snapmaker_pause_extrude = True
                 return
             screen.state_printing()
             screen.show_panel(FILAMENT_PANEL, _("Filament"))
@@ -346,7 +382,7 @@ def init(screen):
     datetime_panel.apply_clock(screen)
     screen.snapmaker_wifi = wifi.WifiIcon(screen)
     screen.snapmaker_webcam = webcam.Webcam(screen)
-    screen.snapmaker_service = service.ServiceButton(screen)
+    screen.snapmaker_menu = service.MenuButton(screen)
     screen.snapmaker_case_light = light.CaseLight(screen)
     screen.snapmaker_update_notice = update_notice.UpdateNotice(screen)
     screen.snapmaker_addon_reload = update_notice.AddonReload(screen)
@@ -501,6 +537,11 @@ def _patch_screensaver(screen):
         result = show(self, *args)
         if self.is_showing:
             _set_backlight(BL_POWER_OFF)
+            # The case light dims with the display when both have the
+            # same time (one timer, so they go dark together)
+            case_light = getattr(self.screen, "snapmaker_case_light", None)
+            if case_light is not None:
+                case_light.screen_blanked()
         return result
 
     def _close(self, *args):
@@ -643,6 +684,10 @@ def _patch_job_status(panel_class):
     def _activate(self):
         if activate is not None:
             activate(self)
+        # On a pause the page is built anew with the extrude page put over
+        # it at once: the thumbnail, loaded meanwhile, was dropped
+        if getattr(self, "filename", None):
+            self.show_file_thumbnail()
         _update_mode(self)
         if getattr(self, "snapmaker_mode_timer", None) is None:
             self.snapmaker_mode_timer = GLib.timeout_add_seconds(
@@ -807,6 +852,116 @@ def _patch_move_options(panel_class):
 
     _add_option.snapmaker_j1 = True
     panel_class.add_option = _add_option
+
+
+def _patch_temperature(panel_class):
+    # The temperature panel in the style of the home page: heater list and
+    # buttons in containers, name and temperature of a heater one block,
+    # no column heading, Heaters Off framed in red as on the home page
+    init = panel_class.__init__
+    if getattr(init, "snapmaker_j1", False):
+        return
+    create_right_panel = panel_class.create_right_panel
+    add_device = panel_class.add_device
+
+    def _part(widget, gap):
+        part = Gtk.EventBox(margin=gap // 2)
+        part.get_style_context().add_class("snap-home-part")
+        widget.set_property("margin", gap // 2)
+        part.add(widget)
+        return part
+
+    def _init(self, *args, **kwargs):
+        init(self, *args, **kwargs)
+        if self._screen.vertical_mode:
+            return
+        for column in (0, 1):
+            heading = self.labels["devices"].get_child_at(column, 0)
+            if heading is not None:
+                heading.set_no_show_all(True)
+                heading.hide()
+        left = self.grid.get_child_at(0, 0)
+        self.grid.remove(left)
+        self.grid.attach(_part(left, self._gtk.font_size), 0, 0, 1, 1)
+
+    def _create_right_panel(self):
+        right = create_right_panel(self)
+        # Cooldown (the selected heaters) becomes Heaters Off as on the home
+        # page: all heaters, whatever is selected
+        cooldown = right.get_child_at(0, 0)
+        if cooldown is not None:
+            right.remove(cooldown)
+            off = self._gtk.Button("cool-down", _("Heaters Off"), "color4",
+                                   self.bts, Gtk.PositionType.LEFT, 1)
+            off.get_style_context().add_class("snap-switch-off")
+            off.connect("clicked", lambda w: self._screen._ws.api
+                        .gcode_script("TURN_OFF_HEATERS"))
+            right.attach(off, 0, 0, 2, 1)
+        if self._screen.vertical_mode:
+            return right
+        return _part(right, self._gtk.font_size)
+
+    def _add_device(self, device):
+        added = add_device(self, device)
+        if not added:
+            return added
+        widgets = self.devices[device]
+        widgets["name_button"].get_style_context().add_class(
+            "snap-heater-tile")
+        if device not in defaults:
+            widgets["temp"].get_style_context().add_class(
+                "snap-heater-power")
+            return added
+        # A heater: ON/OFF as on the home page, with the targets it keeps
+        widgets["temp"].get_style_context().add_class("snap-heater-mid")
+        power = self._gtk.Button(None, _("ON"), "color1", lines=1)
+        power.get_style_context().add_class("snap-heater-power")
+        power.set_size_request(self._gtk.font_size * 4, -1)
+        power.connect("clicked", _power, self, device)
+        grid = self.labels["devices"]
+        grid.attach(power, 2, grid.child_get_property(
+            widgets["temp"], "top-attach"), 1, 1)
+        widgets["power"] = power
+        _show_power(self, device)
+        grid.show_all()
+        return added
+
+    def _power(widget, self, device):
+        if (self._printer.get_stat(device, "target") or 0) > 0:
+            target = 0
+        else:
+            target = service.settings.get(service.TARGETS, {}).get(
+                device, defaults[device])
+        self._screen._ws.api.gcode_script(
+            "SET_HEATER_TEMPERATURE HEATER=%s TARGET=%d" % (device, target))
+
+    def _show_power(self, device):
+        # On: OFF to switch it off and the orange frame around the block
+        on = (self._printer.get_stat(device, "target") or 0) > 0
+        widgets = self.devices[device]
+        widgets["power"].set_label(_("OFF") if on else _("ON"))
+        for key in ("name_button", "temp", "power"):
+            context = widgets[key].get_style_context()
+            if on:
+                context.add_class("snap-heater-on")
+            else:
+                context.remove_class("snap-heater-on")
+
+    def _process_update(self, action, data):
+        process_update(self, action, data)
+        if action == "notify_status_update":
+            for device in self.devices:
+                if "power" in self.devices[device]:
+                    _show_power(self, device)
+
+    defaults = {heater: default
+                for heater, _name, default, _tool in service.HEATERS}
+    process_update = panel_class.process_update
+    _init.snapmaker_j1 = True
+    panel_class.__init__ = _init
+    panel_class.create_right_panel = _create_right_panel
+    panel_class.add_device = _add_device
+    panel_class.process_update = _process_update
 
 
 def _patch_board_fan(panel_class):

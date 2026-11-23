@@ -337,7 +337,9 @@ xy_probe_z:
 #z_probe_speed: 5
 #z_probe_slow_speed: 0.5
 #z_live_speed: 1.25
-#xy_probe_distance: 15
+#xy_probe_distance: 8
+#   Longest fast XY touch.  The hole wall is about 4.6mm from the center;
+#   no contact within this distance aborts the calibration (stock: 15).
 #xy_probe_speed: 13.333
 #xy_probe_slow_speed: 1.333
 #probe_backoff: 1
@@ -466,13 +468,14 @@ When a print pauses for a runout or an `M600` filament change, the
 macros store the toolhead in `_SNAPMAKER_STATE` (`runout_tool`,
 `runout_reason`) and the add-on opens the stock refill dialog instead
 of the extrude panel: unload, insert the filament, heat and feed 100mm
-at 240mm/min (stock), then "Continue Printing" (`RESUME`) or load again.
+at 320mm/min (stock 240), then "Continue Printing" (`RESUME`) or load again.
 In duplication and mirror mode the dialog selects the toolhead and only
 that extruder moves.  `LOAD_FILAMENT` and `UNLOAD_FILAMENT [TOOL=<0|1>]
 [TEMP=<°C>] [LENGTH=<mm>] [SPEED=<mm/min>]` use the active toolhead and
 the print temperature by default (220°C below 170°C); they are also
 used by the load/unload buttons of the KlipperScreen extrude panel.
-Loading feeds at 240mm/min (stock; 600mm/min made the extruder skip).
+Loading feeds at 320mm/min (stock 240, a third more; 600mm/min made
+the extruder skip).
 `SNAPMAKER_LOAD_FILAMENT` / `SNAPMAKER_UNLOAD_FILAMENT` also take
 `TOOL=2`: both nozzles heated to their targets, then extruder1 follows
 extruder (`SYNC_EXTRUDER_MOTION ... MOTION_QUEUE=extruder`) for one move
@@ -822,7 +825,13 @@ dimmed the screen to 10% and showed print status.
 "More → Light" (also in the print menu) replaces the generic Pins panel:
 the case light in four steps (off, low 2%, medium 50%, max), dimmed to a
 chosen step after a time without touch on the display and back to its
-step at the next touch, and the display settings of KlipperScreen
+step at the next touch (during a print with values of its own,
+`light_dim_delay_printing` and `light_dim_level_printing`, -1 for the
+same as without a print; the add-on checks every 5 s whether a print
+started or ended, which counts as a touch; with the same time as the
+screen blanking the light dims when KlipperScreen shows its screen
+saver instead of by a timer of its own, so both go dark together), and
+the display settings of KlipperScreen
 (screen power off times, wake delay, DPMS), which the add-on removes
 from the KlipperScreen settings.  While Klipper is busy (heating,
 homing) the slider keeps the new step with a busy indicator and the
@@ -841,12 +850,21 @@ sections) and joins the WLAN panel and the network name in a Network
 submenu.  "More → Network → Network Name" sets the host name the
 printer announces as `<name>.local` (NetworkManager and avahi on the
 D-Bus, allowed for the group `netdev`), so several printers in one
-network get their own addresses.  The service page (`service.py`,
-panel `snapmaker_service`, opened by a wrench button the add-on adds to
-the action bar of the main menu) sets heater targets with
-`SET_HEATER_TEMPERATURE`, which does not block Klipper as `M109` does;
-the targets it shows are kept in the add-on settings (`service_targets`).
-Load and Unload are enabled within 3°C of the target and call the load
+network get their own addresses.  The home page (`service.py`)
+replaces KlipperScreen's main menu: the add-on returns it when
+KlipperScreen loads the panel `main_menu` (also under its former name
+`snapmaker_service`).  Three parts of fixed width (heaters, filament,
+controls) and below them Print, Move and Calibration; a gear button in
+the action bar (home page only) opens the More menu, which gets
+Temperature and Extrude (`snapmaker_j1.conf`), and the title bar of
+the home page hides its heaters and empties its title (WLAN and clock
+stay on the right).  The page sets heater
+targets with `SET_HEATER_TEMPERATURE`, which does not block Klipper as
+`M109` does; the targets it shows are kept in the add-on settings
+(`service_targets`); the nozzle diameter comes from `nozzle_diameter`
+of the extruder sections.  Motors Off sends `M18` after the
+confirmation of KlipperScreen's move page; Light opens the light page.
+Load and Unload are enabled 5°C below the target and call the load
 macros with `SERVICE=1`; `SNAPMAKER_NOZZLE_SERVICE` moves both nozzles
 75mm in from their endstops (`SNAPMAKER_CAL_CLEAN_POSITION DISTANCE=`)
 with the bed at least 100mm below, `SNAPMAKER_DISTRIBUTE_GREASE` moves
@@ -858,7 +876,14 @@ the title bar (`wifi.py`) shows the signal strength of the connection
 the levels of the WLAN panel, drawn from the parts of the theme symbol
 with the bars without signal in grey); a tap shows the network, the
 signal, the IP address and the web interface address, with a button
-to the WLAN panel.  A USB camera streams to Mainsail (`webcam.py`,
+to the WLAN panel.  Wi-Fi power saving is off
+(`/etc/NetworkManager/conf.d/90-snapmaker-j1-wifi-powersave.conf`,
+`wifi.powersave = 2`): with it the chip held packets back, pings
+varied from 3 to 111ms and Mainsail lost its connection during
+prints (3 to 21ms without).  The OS image has the file; on older
+systems the add-on writes it once with sudo
+(`scripts/snapmaker_j1_wifi.sh`) and switches power saving off at
+once.  A USB camera streams to Mainsail (`webcam.py`,
 `scripts/snapmaker_j1_webcam.sh`): ustreamer on 127.0.0.1:8080 (MJPEG
 1280x720 at 15 fps, passed through without encoding; cameras without
 MJPEG are not streamed, as encoding their frames took 75% of one core;
@@ -920,7 +945,13 @@ extrusion) of the test prints to the J1 limits.  The `G28` lines of
 their start G-code become `SNAPMAKER_HOME_IF_NEEDED`, which homes only
 when not all axes are homed, as the stock firmware does at the start of
 a print (the end G-code still homes to park the carriages; the
-calibration menu has homed the printer already).
+calibration menu has homed the printer already).  Their temperature
+commands become `_SNAPMAKER_CAL_TEMP CMD= T= S=`: the files are sliced
+for PLA, and `SNAPMAKER_CAL_MATERIAL MATERIAL=PLA|PETG|ABS` (sent by the
+calibration page before the print) raises the nozzle temperatures by
+0, 30 or 40 °C and sets the bed to the material's temperature (PLA
+keeps the file's values).  The manual XY test print was converted the
+same way.
 
 ### Commands
 
@@ -946,6 +977,10 @@ During a calibration session the Z range reaches 10mm below
 position_min, so the touches find the bed even when a stored Z origin
 is several millimetres wrong (eg after a manual Z calibration with a
 mismeasured card); the normal range returns when the session ends.
+A Z touch still ends 3mm below the expected bare bed (the measured
+reference, else the Z origin minus the plate thickness) and reports no
+nozzle contact there, so a nozzle whose sensor misses the bed (eg a
+coated nozzle) is not pushed further against it.
 Repeated `SNAPMAKER_CAL_HEIGHT` calls at the same point work like the
 stock live measurement: the first touch is fast and StallGuard guarded,
 the next ones are slow and only as long as the last change requires; a

@@ -3,15 +3,15 @@ M107
 ;TYPE:Custom
 M82 ;absolute extrusion mode
 ;Start GCode begin
-M140 S65   ;Start Warming Bed
-M104 S160 ;Preheat Nozzle
+_SNAPMAKER_CAL_TEMP CMD=M140 S=65 ;Start Warming Bed
+_SNAPMAKER_CAL_TEMP CMD=M104 S=160 ;Preheat Nozzle
 SNAPMAKER_HOME_IF_NEEDED
 G90 ;absolute positioning
 G92 E0
 G92 E0
 G1 Z0.5 F1800
-M109 S210 ;Wait for Hotend Temperature
-M190 S65   ;Wait For Bed Temperature
+_SNAPMAKER_CAL_TEMP CMD=M109 S=210 ;Wait for Hotend Temperature
+_SNAPMAKER_CAL_TEMP CMD=M190 S=65 ;Wait For Bed Temperature
 G1 E-2 F300
 G92 E0
 ;Start GCode end
@@ -17842,10 +17842,10 @@ M593 P1 F50 ; Reset default shaper
 ;TYPE:Custom
 ; Filament-specific end gcode 
 ;END gcode for filament
-M140 S0
+_SNAPMAKER_CAL_TEMP CMD=M140 S=0
 ;End GCode begin
-M104 S0 ;extruder heater off
-M140 S0 ;heated bed heater off (if you have it)
+_SNAPMAKER_CAL_TEMP CMD=M104 S=0 ;extruder heater off
+_SNAPMAKER_CAL_TEMP CMD=M140 S=0 ;heated bed heater off (if you have it)
 G90 ;absolute positioning
 G92 E0
 G1 E-2 F300 ;retract the filament a bit before lifting the nozzle, to release some of the pressure
@@ -17855,6 +17855,6 @@ G1 Y10 F3000 ;so the head is out of the way and Plate is moved forward
 M84 ;steppers off
 ;End GCode end
 M82 ;absolute extrusion mode
-M104 S0
+_SNAPMAKER_CAL_TEMP CMD=M104 S=0
 M107
 ;End of Gcode

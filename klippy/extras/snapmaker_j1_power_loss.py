@@ -202,6 +202,13 @@ class SnapmakerJ1PowerLoss:
                 self._remove()
             return eventtime + IDLE_CHECK_TIME
         self.print_seen = True
+        # Not while homing or probing (G28 of the start G-code): these
+        # "drip" moves queue only about 0.1s of steps, so a longer pass of
+        # the reactor stops the printer ("Timer too close"); and there is
+        # nothing to store yet
+        motion_queuing = self.printer.lookup_object('motion_queuing', None)
+        if getattr(motion_queuing, 'drip_start_times', None):
+            return eventtime + CHECKPOINT_TIME
         # Not in the middle of a macro (a tool change between parking and
         # activating the new extruder): its file line would be skipped on
         # resume with the old extruder active

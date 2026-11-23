@@ -51,6 +51,10 @@ class WifiIcon:
         self.image = Gtk.Image()
         self.box = Gtk.EventBox(no_show_all=True)
         self.box.add(self.image)
+        # A finger-sized tap area around the small symbol (the event box
+        # takes the full height of the title bar)
+        self.image.set_margin_start(screen.gtk.font_size * 2)
+        self.image.set_margin_end(screen.gtk.font_size)
         self.box.connect("button-press-event", self._clicked)
         # Left of the clock
         titlebar = base.titlebar

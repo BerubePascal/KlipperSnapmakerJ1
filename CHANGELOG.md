@@ -10,6 +10,80 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
   Klipper, Moonraker or KlipperScreen (`versions.conf`).
 - **PATCH:** fixes.
 
+## Unreleased
+
+- **Cancel from a pause:** a print cancelled while paused (for example
+  in Mainsail) no longer leaves the touch screen on the extrude page;
+  the print page with the result shows again.
+- **Cura files start with the left nozzle:** a print starts with the
+  left toolhead active, as in the stock firmware.  Cura files heat T0
+  but never select a tool; when the right toolhead was active from
+  before, the print stopped at once with "Extrude below minimum temp".
+- **Home page details** (found in a test with an unpractised user):
+  Home All asks first; a grey Load or Unload says on a tap that the
+  nozzle has to be switched on and hot; a heater that is on shows the
+  target it really heats to; the menu button is hidden while the
+  temperature keypad is open (Back from the menu left the keypad
+  without a way back); a refused temperature stays in the field.
+- **Faster loading:** Load feeds at 320 mm/min instead of 240 (stock),
+  on the home page, the extrude panel and the refill dialog.
+- **Temperature pages in the home page style:** the keypad of the
+  home page and its presets sit in containers, the presets as tiles.
+  More → Temperature shows the heaters as on the home page (orange
+  frame when on, an ON/OFF button each), Cooldown became Heaters Off
+  (all heaters).
+- **Printer state on the home page:** the title bar shows Ready,
+  Heating, what runs (eg Loading T0, Homing) or Busy.
+- **WLAN symbol easier to tap:** its tap area in the title bar is larger,
+  so the WLAN window opens without hitting the small symbol exactly.
+- **Load and unload start sooner:** the buttons are ready and the load
+  macros start once the nozzle is 5°C below its target, instead of
+  waiting until the temperature settled within 1°C (a minute or more
+  after the overshoot).
+- **New home page** (board #21): the service page becomes the home
+  page of the touch screen.  One tile per heater with the current and
+  the target temperature (a tap shows the target on a keypad with the
+  material presets) and ON/OFF, loading
+  and unloading per nozzle and both, the service tasks (Home All,
+  Nozzle Service, Distribute Grease, Light) and Print, Move and
+  Calibration on one page, without the temperature graph.  New:
+  **Motors Off** (with a confirmation) and the nozzle diameter per
+  nozzle.  Motors Off and Heaters Off are framed in red.  The
+  gear in the action bar opens the menu, which now also holds
+  Temperature (material presets) and Extrude (any length).
+- **Case light during a print:** More → Light has "Dim after (Printing)"
+  and "Dim to (Printing)", as the screen settings, for example to keep the print lit
+  for the webcam.  The default "As without print" keeps the current
+  behavior.  With the same time as the screen, the case light dims
+  together with it.
+- **Stable Mainsail connection over WLAN:** Wi-Fi power saving is
+  switched off.  It delayed packets (pings up to 111ms instead of
+  21ms) and Mainsail lost its connection during prints.  The add-on
+  sets it once on systems installed before the OS has it.
+- **Assisted calibrations stop when a nozzle detects no contact:** the
+  XY touch now ends 8mm from the center (was 15mm), a Z touch 3mm below
+  the expected bed (was up to 10mm below the travel range), and the
+  calibration aborts with "No nozzle contact" instead of pushing the
+  nozzle further.  The message points to the manual calibration, which
+  coated nozzles need.  After an XY abort the axis is homed again.
+- **Fine Tuning during calibration test prints:** the print step of the
+  calibration page has a Fine Tuning button (Z offset, speed, flow);
+  Back returns to the calibration.
+- **Test prints in PETG or ABS:** the Load Filament page of the
+  calibration test prints (XY offset, calibration check, vibration)
+  offers PLA, PETG and ABS.  The prints are sliced for PLA; PETG prints
+  30 °C hotter with the bed at 75 °C, ABS 40 °C hotter at 90 °C
+  (`SNAPMAKER_CAL_MATERIAL`).
+- **Calibration dialogs** (failed step, quit) show their text centered
+  like the other dialogs of the add-on.
+- **Power loss recovery while homing:** no state is stored during homing
+  and probing moves (the G28 of the start G-code), where Klipper queues
+  only a fraction of a second of steps.  Less work in this window; a
+  print start once stopped there with "Timer too close" (not
+  reproducible, so not proven to be the cause).
+- **Print page:** the preview picture of the print is back after a
+  pause (it was dropped while the extrude page lay over the print page).
+
 ## v1.6.0 (2026-11-17)
 
 - **Manual:** messages on the phone when a print starts, ends, fails,
