@@ -19,8 +19,9 @@ from . import style as S
 # filament when a sensor reports a runout, heats the nozzle, lets the user
 # insert the filament while the extruder feeds it (100mm at 240mm/min)
 # and continues the print once the user sees filament at the nozzle.
+# Here a third faster (320mm/min); 600mm/min made the extruder skip
 LOAD_LENGTH = 100
-LOAD_SPEED = 240
+LOAD_SPEED = 320
 UNLOAD_LENGTH = 80
 # Small stock icons keep their size instead of filling the picture area
 ICON_SIZES = {"icon_tips_success_64x64": 80}

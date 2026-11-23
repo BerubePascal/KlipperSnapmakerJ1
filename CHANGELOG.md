@@ -25,6 +25,15 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
   target it really heats to; the menu button is hidden while the
   temperature keypad is open (Back from the menu left the keypad
   without a way back); a refused temperature stays in the field.
+- **Faster loading:** Load feeds at 320 mm/min instead of 240 (stock),
+  on the home page, the extrude panel and the refill dialog.
+- **Temperature pages in the home page style:** the keypad of the
+  home page and its presets sit in containers, the presets as tiles.
+  More → Temperature shows the heaters as on the home page (orange
+  frame when on, an ON/OFF button each), Cooldown became Heaters Off
+  (all heaters).
+- **Printer state on the home page:** the title bar shows Ready,
+  Heating, what runs (eg Loading T0, Homing) or Busy.
 - **WLAN symbol easier to tap:** its tap area in the title bar is larger,
   so the WLAN window opens without hitting the small symbol exactly.
 - **Load and unload start sooner:** the buttons are ready and the load
@@ -38,8 +47,8 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
   and unloading per nozzle and both, the service tasks (Home All,
   Nozzle Service, Distribute Grease, Light) and Print, Move and
   Calibration on one page, without the temperature graph.  New:
-  **Disable Motors** (with a confirmation) and the nozzle diameter per
-  nozzle.  Disable Motors and All Heaters Off are framed in red.  The
+  **Motors Off** (with a confirmation) and the nozzle diameter per
+  nozzle.  Motors Off and Heaters Off are framed in red.  The
   gear in the action bar opens the menu, which now also holds
   Temperature (material presets) and Extrude (any length).
 - **Case light during a print:** More → Light has "Dim after (Printing)"

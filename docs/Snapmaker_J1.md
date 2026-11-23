@@ -468,13 +468,14 @@ When a print pauses for a runout or an `M600` filament change, the
 macros store the toolhead in `_SNAPMAKER_STATE` (`runout_tool`,
 `runout_reason`) and the add-on opens the stock refill dialog instead
 of the extrude panel: unload, insert the filament, heat and feed 100mm
-at 240mm/min (stock), then "Continue Printing" (`RESUME`) or load again.
+at 320mm/min (stock 240), then "Continue Printing" (`RESUME`) or load again.
 In duplication and mirror mode the dialog selects the toolhead and only
 that extruder moves.  `LOAD_FILAMENT` and `UNLOAD_FILAMENT [TOOL=<0|1>]
 [TEMP=<°C>] [LENGTH=<mm>] [SPEED=<mm/min>]` use the active toolhead and
 the print temperature by default (220°C below 170°C); they are also
 used by the load/unload buttons of the KlipperScreen extrude panel.
-Loading feeds at 240mm/min (stock; 600mm/min made the extruder skip).
+Loading feeds at 320mm/min (stock 240, a third more; 600mm/min made
+the extruder skip).
 `SNAPMAKER_LOAD_FILAMENT` / `SNAPMAKER_UNLOAD_FILAMENT` also take
 `TOOL=2`: both nozzles heated to their targets, then extruder1 follows
 extruder (`SYNC_EXTRUDER_MOTION ... MOTION_QUEUE=extruder`) for one move
@@ -861,7 +862,7 @@ stay on the right).  The page sets heater
 targets with `SET_HEATER_TEMPERATURE`, which does not block Klipper as
 `M109` does; the targets it shows are kept in the add-on settings
 (`service_targets`); the nozzle diameter comes from `nozzle_diameter`
-of the extruder sections.  Disable Motors sends `M18` after the
+of the extruder sections.  Motors Off sends `M18` after the
 confirmation of KlipperScreen's move page; Light opens the light page.
 Load and Unload are enabled 5°C below the target and call the load
 macros with `SERVICE=1`; `SNAPMAKER_NOZZLE_SERVICE` moves both nozzles

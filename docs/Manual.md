@@ -67,7 +67,11 @@ implemented, configuration) see [Snapmaker_J1.md](Snapmaker_J1.md).
 
 **Title bar.** The WLAN symbol and the clock; on the other pages also
 the current temperatures of the left nozzle (0), the right nozzle (1)
-and the heated bed, and the title of the page.  The WLAN symbol shows
+and the heated bed, and the title of the page; on the home page the
+state of the printer: Ready, Heating (a heater that is on is not hot
+yet), what a button of the home page started while it runs (eg
+Loading T0, Homing, Distributing grease) or Busy (a command from
+elsewhere, eg the web interface).  The WLAN symbol shows
 the signal strength: the more bars are orange, the better the signal;
 without a connection the symbol is grey.  Tap it to see the network,
 the signal, the IP address and the address of the
@@ -102,7 +106,7 @@ instead.
   really heats to, also when a print or the web interface set it).  Tap it to change the target: the
   keypad shows the current one in grey, and the first digit typed
   replaces it (whole degrees; ✓ alone keeps it).  Beside it the
-  material presets (PLA, ABS, PETG, FLEX) set it with one tap.  Back
+  material presets (PLA, ABS, PETG, FLEX) as tiles set it with one tap.  Back
   closes the keypad.
   The page keeps the target, also after a restart: 220°C for the
   nozzles and 60°C for the bed by default.
@@ -113,7 +117,7 @@ instead.
 **Filament** (T0, T1 and Both): **Load / Unload** are available (grey
 before; a tap then says what is missing) once the
 nozzle is on and at most 5°C below its target.  Load feeds 60 mm at
-240 mm/min, Unload pushes 5 mm and pulls 80 mm back.  The nozzle stays
+320 mm/min, Unload pushes 5 mm and pulls 80 mm back.  The nozzle stays
 hot for another run.  **Both** moves both extruders at once; two single
 buttons pressed one after the other run one after the other, as Klipper
 moves one thing at a time.  Loading and unloading move both nozzles to
@@ -136,10 +140,10 @@ red at the end):
 - **Light:** opens the [Light](#light) page: brightness of the case
   light, dimming and the screen.  (Fine Tuning is on the print page and
   in the menu.)
-- **Disable Motors:** switches the stepper motors off after a
+- **Motors Off:** switches the stepper motors off after a
   confirmation, so the nozzles and the bed can be moved by hand.  Home
   again before the next move.
-- **All Heaters Off:** switches all heaters off.
+- **Heaters Off:** switches all heaters off.
 
 **Bottom row:** **Print** (files on the printer), **Move** (home and
 move the axes, switch the active toolhead) and **Calibration** (the J1
@@ -279,8 +283,10 @@ Check that the print is still on the plate before you resume.
 
 ![Temperature](manual/temperature.png)
 
-- **Heaters:** tap one or more heaters, then enter a temperature or choose
-  a preset.
+- **Heaters:** as on the [home page](#home-page): an orange frame
+  means the heater is on, **ON/OFF** switches it (on to the target the
+  home page keeps).  Tap the name of one or more heaters (tinted when
+  selected), then tap the temperature to enter one or choose a preset.
 - **Presets:** each one heats both nozzles and the bed:
 
   | Preset | Nozzles | Bed |
@@ -290,7 +296,7 @@ Check that the print is still on the plate before you resume.
   | PETG | 240 °C | 80 °C |
   | FLEX | 210 °C | 60 °C |
 
-- **Cooldown:** turns all heaters off.
+- **Heaters Off:** turns all heaters off.
 
 The nozzles can be set up to 300 °C and the bed up to 100 °C, as on the
 stock firmware.  The PT100 sensors and the heater limits are those of the
@@ -315,7 +321,7 @@ stock firmware.
   speed.
 - **Load and Unload:** use the active nozzle at the print temperature
   (220 °C when it is colder than 170 °C), homing first if needed.
-  Loading feeds at 240 mm/min, as the stock refill dialog.  Both
+  Loading feeds at 320 mm/min (stock: 240).  Both
   nozzles at once: [home page](#home-page).
 - **Left Filament / Right Filament:** switch the filament sensors on or
   off.  The setting is kept after a restart.

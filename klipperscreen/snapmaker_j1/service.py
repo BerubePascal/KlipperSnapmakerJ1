@@ -20,6 +20,7 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import GdkPixbuf, GLib, Gtk, Pango
 
+from ks_includes.KlippyGtk import find_widget
 from ks_includes.screen_panel import ScreenPanel
 from ks_includes.widgets.keypad import Keypad
 
@@ -52,6 +53,20 @@ def _white_icon(themedir, name, size):
     return loader.get_pixbuf()
 
 
+def temperature_keypad(keypad):
+    # Back closes the keypad as on every page (not its X); whole degrees
+    # only (no point); the current target is the grey placeholder, which
+    # typing replaces and OK alone keeps
+    for button in (keypad.top_box.get_children()[1:]
+                   + [b for b in keypad.get_children()[1].get_children()
+                      if b.get_label() == "."]):
+        button.set_no_show_all(True)
+        button.hide()
+    entry = keypad.entry
+    keypad.get_value = lambda: float(
+        entry.get_text() or entry.get_placeholder_text() or "nan")
+
+
 class MenuButton:
     # The menu button in the action bar of the home page opens the menu of
     # KlipperScreen (More); the home page shows no title and no heaters in
@@ -79,9 +94,12 @@ class MenuButton:
             item_box = base.control["item_box"]
             item_box.set_no_show_all(home)
             item_box.set_visible(not home)
-            # The title stays (empty), it keeps WLAN and clock on the right
+            # The title shows the printer state on the left, it keeps WLAN
+            # and clock on the right; the other pages keep it centred
+            base.titlelbl.set_halign(
+                Gtk.Align.START if home else Gtk.Align.CENTER)
             if home:
-                base.titlelbl.set_label("")
+                base.titlelbl.set_label(panel.status())
 
         base.add_content = _add_content
 
@@ -97,6 +115,9 @@ class Panel(ScreenPanel):
         self.ready = {}
         self.keypad_heater = None
         self.serviced = False
+        # What this page started (title bar while Klipper is busy with it)
+        self.task = None
+        self.task_seen = False
         targets = settings.get(TARGETS, {})
         self.targets = {heater: targets.get(heater, default)
                         for heater, _name, default, _tool in HEATERS}
@@ -143,7 +164,7 @@ class Panel(ScreenPanel):
             "grease": self._gtk.Button("refresh", _("Distribute Grease"),
                                        "color3"),
             # As on the move page: the axes can be moved by hand afterwards
-            "motors_off": self._gtk.Button("motor-off", _("Disable Motors"),
+            "motors_off": self._gtk.Button("motor-off", _("Motors Off"),
                                            "color2"),
         }
         self.buttons["nozzles"].connect("clicked", self._nozzles)
@@ -157,7 +178,7 @@ class Panel(ScreenPanel):
         # where it is needed)
         self.light = self._gtk.Button("light", _("Light"), "color4")
         self.light.connect("clicked", self._open, LIGHT_PANEL, _("Light"))
-        off = self._gtk.Button("cool-down", _("All Heaters Off"), "color1")
+        off = self._gtk.Button("cool-down", _("Heaters Off"), "color1")
         off.connect("clicked", self._all_off)
         # Moves first (home, then the tasks that need it), the two switches
         # that turn something off at the end, set off in red
@@ -193,37 +214,36 @@ class Panel(ScreenPanel):
 
         self.keypad = Keypad(screen, self._keypad_ok, self._keypad_close,
                              entry_max=3)
-        # Back closes the keypad as on every page (not its X); whole
-        # degrees only (no point); the current target is the grey
-        # placeholder, which typing replaces and OK alone keeps
-        for button in (self.keypad.top_box.get_children()[1:]
-                       + [b for b in self.keypad.get_children()[1]
-                          .get_children() if b.get_label() == "."]):
-            button.set_no_show_all(True)
-            button.hide()
-        entry = self.keypad.entry
-        self.keypad.get_value = lambda: float(
-            entry.get_text() or entry.get_placeholder_text() or "nan")
+        temperature_keypad(self.keypad)
         # A refused value stays for correction (_edit empties the entry)
         self.keypad.clear = lambda: None
+        # The 0 takes the place of the hidden point
+        numpad = self.keypad.get_children()[1]
+        zero = numpad.get_child_at(1, 3)
+        numpad.child_set_property(zero, "width", 2)
+        zero.get_style_context().add_class("numpad_bright")
         self.keypad_title = Gtk.Label(hexpand=True)
-        self.keypad_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL,
-                                  spacing=self._gtk.font_size // 2,
-                                  halign=Gtk.Align.CENTER, hexpand=True,
-                                  vexpand=True)
-        self.keypad_box.set_size_request(screen.width // 3, -1)
-        self.keypad_box.add(self.keypad_title)
-        self.keypad_box.pack_start(self.keypad, True, True, 0)
+        keypad_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL,
+                             spacing=gap // 2)
+        keypad_box.add(self.keypad_title)
+        keypad_box.pack_start(self.keypad, True, True, 0)
         # The material presets of the temperature page beside the keypad
-        # (filled per heater in _edit)
-        self.presets = Gtk.Box(orientation=Gtk.Orientation.VERTICAL,
-                               spacing=self._gtk.font_size // 2,
-                               valign=Gtk.Align.CENTER)
-        self.presets.set_size_request(screen.width // 5, -1)
-        self.edit_box = Gtk.Box(spacing=self._gtk.font_size,
-                                halign=Gtk.Align.CENTER)
-        self.edit_box.pack_start(self.keypad_box, False, False, 0)
-        self.edit_box.pack_start(self.presets, False, False, 0)
+        # as tiles (filled per heater in _edit)
+        self.presets = Gtk.Grid(column_homogeneous=True,
+                                row_homogeneous=True, row_spacing=gap // 2,
+                                column_spacing=gap // 2)
+        # In containers as the parts of the home page: the keypad as wide
+        # as the heaters, the presets over the rest
+        self.edit_box = Gtk.Box(spacing=gap, margin_bottom=gap // 2)
+        for child, width in ((keypad_box, self.widths[0]),
+                             (self.presets,
+                              self.widths[1] + self.widths[2] + gap)):
+            child.set_property("margin", gap // 2)
+            container = Gtk.EventBox()
+            container.get_style_context().add_class("snap-home-part")
+            container.set_size_request(width, -1)
+            container.add(child)
+            self.edit_box.pack_start(container, False, False, 0)
         self.content.add(self.page)
 
     def _open(self, widget, panel, title):
@@ -345,6 +365,27 @@ class Panel(ScreenPanel):
         self.ready = dict(ready_all)
         self.ready[2] = all(ready_all.values())
         self._set_ready(self.both, self.ready[2])
+        self._screen.base_panel.titlelbl.set_label(self.status())
+
+    def status(self):
+        # Title bar: what runs (started here, eg Loading T0; Busy for a
+        # command from elsewhere), Heating until every heater that is on
+        # is hot, else Ready
+        if self._printer is None:
+            return ""
+        if self._printer.get_stat("idle_timeout", "state") == "Printing":
+            if self.task:
+                self.task_seen = True
+                return self.task
+            return _("Busy")
+        if self.task_seen:
+            self.task, self.task_seen = None, False
+        if any(self._stat(h, "target") > 0
+               and self._stat(h, "temperature")
+               < self._stat(h, "target") - READY_MARGIN
+               for h in self.rows):
+            return _("Heating")
+        return _("Ready")
 
     def _set_ready(self, buttons, ready):
         # Not insensitive: a tap on a button that is not ready explains why
@@ -374,14 +415,18 @@ class Panel(ScreenPanel):
             self.presets.remove(child)
         # Preheat sections name the bed "bed", the nozzles by their object
         key = "bed" if heater == "heater_bed" else heater
+        i = 0
         for material, values in self._config.get_preheat_options().items():
             temp = (values or {}).get(key)
             if temp:
-                button = self._gtk.Button(None, "%s  %d°C" % (material, temp))
-                button.set_size_request(-1, self._gtk.font_size * 4)
+                button = self._gtk.Button("heat-up", material)
+                button.set_label("%s\n%d°C" % (material, temp))
+                find_widget(button, Gtk.Label).set_justify(
+                    Gtk.Justification.CENTER)
                 button.connect("clicked",
                                lambda w, t=temp: self._keypad_ok(t))
-                self.presets.add(button)
+                self.presets.attach(button, i % 2, i // 2, 1, 1)
+                i += 1
         self.content.remove(self.page)
         self.content.add(self.edit_box)
         self._screen.base_panel.set_control_sensitive(True, "back")
@@ -438,20 +483,38 @@ class Panel(ScreenPanel):
                 _("Switch the nozzle on (ON) and wait until it is hot"),
                 level=1)
             return
-        self._screen._ws.api.gcode_script(
-            "%s TOOL=%d TEMP=%d SERVICE=1" % (macro, tool,
-                                              self._stat(heater, "target")))
+        self._run("%s TOOL=%d TEMP=%d SERVICE=1" % (
+            macro, tool, self._stat(heater, "target")),
+            (_("Unloading") if "UNLOAD" in macro else _("Loading"))
+            + " " + (_("Both") if tool == 2 else "T%d" % tool))
         self._set_serviced(True)
+
+    def _run(self, gcode, task):
+        # Sends a command; the title bar names it while Klipper runs it
+        self.task, self.task_seen = task, False
+        self._screen._ws.api.gcode_script(gcode)
+        GLib.timeout_add_seconds(5, self._task_timeout, task)
+
+    def _task_timeout(self, task):
+        # A command that never kept Klipper busy (refused, or done at
+        # once) must not name a later one from elsewhere
+        if self.task == task and not self.task_seen:
+            self.task = None
+        return False
 
     def _set_serviced(self, serviced):
         self.serviced = serviced
-        self.buttons["nozzles"].set_label(_("Park Nozzles") if serviced
-                                          else _("Nozzle Service"))
+        # Two lines: on one line "Park Nozzles" widened the page past the
+        # right screen edge
+        self.buttons["nozzles"].set_label(
+            _("Park Nozzles").replace(" ", "\n", 1) if serviced
+            else _("Nozzle Service"))
 
     def _nozzles(self, widget):
-        self._screen._ws.api.gcode_script(
-            "SNAPMAKER_NOZZLE_PARK" if self.serviced
-            else "SNAPMAKER_NOZZLE_SERVICE")
+        if self.serviced:
+            self._run("SNAPMAKER_NOZZLE_PARK", _("Parking nozzles"))
+        else:
+            self._run("SNAPMAKER_NOZZLE_SERVICE", _("Nozzle Service"))
         self._set_serviced(not self.serviced)
 
     def _all_off(self, widget):
@@ -459,9 +522,23 @@ class Panel(ScreenPanel):
             self._set_target(heater, 0)
 
     def _home(self, widget):
-        self._screen._confirm_send_action(
-            widget, _("Home all axes? The nozzles and the bed move."),
-            "printer.gcode.script", {"script": "G28"})
+        label = Gtk.Label(hexpand=True, vexpand=True,
+                          halign=Gtk.Align.CENTER, valign=Gtk.Align.CENTER,
+                          wrap=True, wrap_mode=Pango.WrapMode.WORD_CHAR)
+        label.set_text(_("Home all axes? The nozzles and the bed move."))
+        buttons = [
+            {"name": _("Accept"), "response": Gtk.ResponseType.OK,
+             "style": "dialog-info"},
+            {"name": _("Cancel"), "response": Gtk.ResponseType.CANCEL,
+             "style": "dialog-error"},
+        ]
+
+        def response(dialog, response_id):
+            self._gtk.remove_dialog(dialog)
+            if response_id == Gtk.ResponseType.OK:
+                self._run("G28", _("Homing"))
+
+        self._gtk.Dialog("KlipperScreen", buttons, label, response)
 
     def _grease(self, widget):
         label = Gtk.Label(hexpand=True, vexpand=True,
@@ -487,7 +564,7 @@ class Panel(ScreenPanel):
             self._gtk.remove_dialog(dialog)
             if response_id == Gtk.ResponseType.OK:
                 self._set_serviced(False)
-                self._screen._ws.api.gcode_script(
-                    "SNAPMAKER_DISTRIBUTE_GREASE")
+                self._run("SNAPMAKER_DISTRIBUTE_GREASE",
+                          _("Distributing grease"))
 
         self._gtk.Dialog(_("Distribute Grease"), buttons, label, response)

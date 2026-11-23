@@ -533,6 +533,40 @@ button.snap-switch-off label {
     margin: .15em;
 }
 
+/* Temperature panel: name and temperature one block, as on the home page */
+.heater-grid button.snap-heater-tile {
+    border-radius: .6em 0 0 .6em;
+    margin-right: 0;
+}
+
+.heater-grid button.snap-heater-power {
+    border-radius: 0 .6em .6em 0;
+    border-left: .08em solid @lines;
+    margin-left: 0;
+}
+
+/* A heater: name, temperature and ON/OFF one block, the orange frame
+ * when it is on (tile and ON/OFF as on the home page) */
+.heater-grid button.snap-heater-mid {
+    border-radius: 0;
+    border-left: .08em solid @lines;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.heater-grid button.snap-heater-mid.snap-heater-on {
+    border-top: .15em solid @primary;
+    border-bottom: .15em solid @primary;
+}
+
+/* A selected heater (Cooldown and the presets set it): tinted, the frame
+ * means on */
+.heater-grid button.snap-heater-tile.button_active {
+    box-shadow: none;
+    background-image: none;
+    background-color: alpha(@primary, .12);
+}
+
 .fan_slider {
     color: @text;
 }

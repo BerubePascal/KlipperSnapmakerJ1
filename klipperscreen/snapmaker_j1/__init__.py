@@ -134,6 +134,8 @@ def init(screen):
             _patch_updater(screen, module.Panel)
         elif panel == "gcodes":
             print_mode.patch_gcodes(screen, module.Panel)
+        elif panel == "temperature":
+            _patch_temperature(module.Panel)
         return module
 
     screen._load_panel = _load_panel
@@ -850,6 +852,116 @@ def _patch_move_options(panel_class):
 
     _add_option.snapmaker_j1 = True
     panel_class.add_option = _add_option
+
+
+def _patch_temperature(panel_class):
+    # The temperature panel in the style of the home page: heater list and
+    # buttons in containers, name and temperature of a heater one block,
+    # no column heading, Heaters Off framed in red as on the home page
+    init = panel_class.__init__
+    if getattr(init, "snapmaker_j1", False):
+        return
+    create_right_panel = panel_class.create_right_panel
+    add_device = panel_class.add_device
+
+    def _part(widget, gap):
+        part = Gtk.EventBox(margin=gap // 2)
+        part.get_style_context().add_class("snap-home-part")
+        widget.set_property("margin", gap // 2)
+        part.add(widget)
+        return part
+
+    def _init(self, *args, **kwargs):
+        init(self, *args, **kwargs)
+        if self._screen.vertical_mode:
+            return
+        for column in (0, 1):
+            heading = self.labels["devices"].get_child_at(column, 0)
+            if heading is not None:
+                heading.set_no_show_all(True)
+                heading.hide()
+        left = self.grid.get_child_at(0, 0)
+        self.grid.remove(left)
+        self.grid.attach(_part(left, self._gtk.font_size), 0, 0, 1, 1)
+
+    def _create_right_panel(self):
+        right = create_right_panel(self)
+        # Cooldown (the selected heaters) becomes Heaters Off as on the home
+        # page: all heaters, whatever is selected
+        cooldown = right.get_child_at(0, 0)
+        if cooldown is not None:
+            right.remove(cooldown)
+            off = self._gtk.Button("cool-down", _("Heaters Off"), "color4",
+                                   self.bts, Gtk.PositionType.LEFT, 1)
+            off.get_style_context().add_class("snap-switch-off")
+            off.connect("clicked", lambda w: self._screen._ws.api
+                        .gcode_script("TURN_OFF_HEATERS"))
+            right.attach(off, 0, 0, 2, 1)
+        if self._screen.vertical_mode:
+            return right
+        return _part(right, self._gtk.font_size)
+
+    def _add_device(self, device):
+        added = add_device(self, device)
+        if not added:
+            return added
+        widgets = self.devices[device]
+        widgets["name_button"].get_style_context().add_class(
+            "snap-heater-tile")
+        if device not in defaults:
+            widgets["temp"].get_style_context().add_class(
+                "snap-heater-power")
+            return added
+        # A heater: ON/OFF as on the home page, with the targets it keeps
+        widgets["temp"].get_style_context().add_class("snap-heater-mid")
+        power = self._gtk.Button(None, _("ON"), "color1", lines=1)
+        power.get_style_context().add_class("snap-heater-power")
+        power.set_size_request(self._gtk.font_size * 4, -1)
+        power.connect("clicked", _power, self, device)
+        grid = self.labels["devices"]
+        grid.attach(power, 2, grid.child_get_property(
+            widgets["temp"], "top-attach"), 1, 1)
+        widgets["power"] = power
+        _show_power(self, device)
+        grid.show_all()
+        return added
+
+    def _power(widget, self, device):
+        if (self._printer.get_stat(device, "target") or 0) > 0:
+            target = 0
+        else:
+            target = service.settings.get(service.TARGETS, {}).get(
+                device, defaults[device])
+        self._screen._ws.api.gcode_script(
+            "SET_HEATER_TEMPERATURE HEATER=%s TARGET=%d" % (device, target))
+
+    def _show_power(self, device):
+        # On: OFF to switch it off and the orange frame around the block
+        on = (self._printer.get_stat(device, "target") or 0) > 0
+        widgets = self.devices[device]
+        widgets["power"].set_label(_("OFF") if on else _("ON"))
+        for key in ("name_button", "temp", "power"):
+            context = widgets[key].get_style_context()
+            if on:
+                context.add_class("snap-heater-on")
+            else:
+                context.remove_class("snap-heater-on")
+
+    def _process_update(self, action, data):
+        process_update(self, action, data)
+        if action == "notify_status_update":
+            for device in self.devices:
+                if "power" in self.devices[device]:
+                    _show_power(self, device)
+
+    defaults = {heater: default
+                for heater, _name, default, _tool in service.HEATERS}
+    process_update = panel_class.process_update
+    _init.snapmaker_j1 = True
+    panel_class.__init__ = _init
+    panel_class.create_right_panel = _create_right_panel
+    panel_class.add_device = _add_device
+    panel_class.process_update = _process_update
 
 
 def _patch_board_fan(panel_class):
