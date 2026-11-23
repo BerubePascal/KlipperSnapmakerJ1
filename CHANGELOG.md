@@ -12,6 +12,10 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
 
 ## Unreleased
 
+- **Cura files start with the left nozzle:** a print starts with the
+  left toolhead active, as in the stock firmware.  Cura files heat T0
+  but never select a tool; when the right toolhead was active from
+  before, the print stopped at once with "Extrude below minimum temp".
 - **Home page details** (found in a test with an unpractised user):
   Home All asks first; a grey Load or Unload says on a tap that the
   nozzle has to be switched on and hot; a heater that is on shows the
