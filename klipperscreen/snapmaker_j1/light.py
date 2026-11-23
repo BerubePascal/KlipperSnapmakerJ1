@@ -224,7 +224,7 @@ class Panel(ScreenPanel):
                 self._dim_level_changed))
             same = [(_("As without print"), SAME)]
             box.add(self._dropdown(
-                _("Dim after during a print"),
+                _("Dim after") + " (" + _("Printing") + ")",
                 _("For example longer or never, to watch the print with the"
                   " webcam"),
                 same + [(_("Never") if m == 0 else "%d min" % m, m)
@@ -232,7 +232,7 @@ class Panel(ScreenPanel):
                 settings.get("light_dim_delay_printing", SAME),
                 self._dim_delay_changed, "light_dim_delay_printing"))
             box.add(self._dropdown(
-                _("Dim to during a print"), None,
+                _("Dim to") + " (" + _("Printing") + ")", None,
                 same + [(names[i], i) for i in range(len(LEVELS))],
                 settings.get("light_dim_level_printing", SAME),
                 self._dim_level_changed, "light_dim_level_printing"))

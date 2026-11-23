@@ -628,7 +628,7 @@ results are stored without Save Config.
 - **Dim after / Dim to:** like the stock firmware, the case light dims
   after a time without touching the screen, and returns to its step at
   the next touch.
-- **Dim after / Dim to during a print:** other values while a print
+- **Dim after (Printing) / Dim to (Printing):** other values while a print
   runs, for example a longer time or Never and a brighter step, so the
   print stays visible in the webcam.  "As without print" uses the
   values above.  When a print starts or ends, the light returns to its
