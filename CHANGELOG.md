@@ -12,8 +12,6 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
 
 ## Unreleased
 
-## v1.7.0 (2026-11-23)
-
 - **Case light during a print:** More → Light has "Dim after during a
   print" and "Dim to during a print", for example to keep the print lit
   for the webcam.  The default "As without print" keeps the current
