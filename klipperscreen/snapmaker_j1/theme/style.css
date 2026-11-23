@@ -118,6 +118,14 @@ button.active label,
     color: @text;
 }
 
+/* An icon on the orange gradient (Print on the home page) without the
+ * grey box behind it */
+button.active image,
+button.active label {
+    background-color: transparent;
+    background-image: none;
+}
+
 .horizontal_togglebuttons {
     border: .1em solid @lines;
     border-right-width: 0;
@@ -366,6 +374,72 @@ textview .time {
 }
 
 .dialog button.dialog-error label {
+    color: @error;
+}
+
+/* Home page: Load and Unload before the nozzle is hot look disabled, but
+ * a tap still explains why */
+button.snap-not-ready {
+    background-image: none;
+    background-color: @card-bottom;
+}
+
+button.snap-not-ready label {
+    color: @disabled;
+}
+
+button.snap-not-ready image {
+    opacity: .4;
+}
+
+/* Home page: the three parts (heaters, filament, controls) in containers
+ * a little lighter than the page */
+.snap-home-part {
+    background-color: mix(@bg, @card-bottom, .45);
+    border: .06em solid alpha(@lines, .5);
+    border-radius: .8em;
+}
+
+.snap-home-part label {
+    background-color: transparent;
+}
+
+button.snap-home-nav {
+    margin: 0;
+}
+
+/* Home page: a heater tile and its ON/OFF button form one block; a
+ * heater that is on gets one orange frame around both */
+button.snap-heater-tile {
+    border-radius: .6em 0 0 .6em;
+    margin-right: 0;
+}
+
+button.snap-heater-power {
+    border-radius: 0 .6em .6em 0;
+    border-left: .08em solid @lines;
+    margin-left: 0;
+}
+
+/* The colored bar on the left of the tile stays */
+button.snap-heater-tile.snap-heater-on {
+    border-top: .15em solid @primary;
+    border-bottom: .15em solid @primary;
+}
+
+button.snap-heater-power.snap-heater-on {
+    border-top: .15em solid @primary;
+    border-right: .15em solid @primary;
+    border-bottom: .15em solid @primary;
+}
+
+/* Service page: the buttons that switch something off (motors, heaters),
+ * with a red outline and red text like the cancelling dialog buttons */
+button.snap-switch-off {
+    box-shadow: inset 0 0 0 .1em alpha(@error, .6);
+}
+
+button.snap-switch-off label {
     color: @error;
 }
 

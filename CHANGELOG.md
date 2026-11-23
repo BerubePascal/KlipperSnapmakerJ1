@@ -12,6 +12,29 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
 
 ## Unreleased
 
+- **Home page details** (found in a test with an unpractised user):
+  Home All asks first; a grey Load or Unload says on a tap that the
+  nozzle has to be switched on and hot; a heater that is on shows the
+  target it really heats to; the menu button is hidden while the
+  temperature keypad is open (Back from the menu left the keypad
+  without a way back); a refused temperature stays in the field.
+- **WLAN symbol easier to tap:** its tap area in the title bar is larger,
+  so the WLAN window opens without hitting the small symbol exactly.
+- **Load and unload start sooner:** the buttons are ready and the load
+  macros start once the nozzle is 5°C below its target, instead of
+  waiting until the temperature settled within 1°C (a minute or more
+  after the overshoot).
+- **New home page** (board #21): the service page becomes the home
+  page of the touch screen.  One tile per heater with the current and
+  the target temperature (a tap shows the target on a keypad with the
+  material presets) and ON/OFF, loading
+  and unloading per nozzle and both, the service tasks (Home All,
+  Nozzle Service, Distribute Grease, Light) and Print, Move and
+  Calibration on one page, without the temperature graph.  New:
+  **Disable Motors** (with a confirmation) and the nozzle diameter per
+  nozzle.  Disable Motors and All Heaters Off are framed in red.  The
+  gear in the action bar opens the menu, which now also holds
+  Temperature (material presets) and Extrude (any length).
 - **Case light during a print:** More → Light has "Dim after during a
   print" and "Dim to during a print", for example to keep the print lit
   for the webcam.  The default "As without print" keeps the current

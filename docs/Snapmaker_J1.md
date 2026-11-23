@@ -849,12 +849,21 @@ sections) and joins the WLAN panel and the network name in a Network
 submenu.  "More → Network → Network Name" sets the host name the
 printer announces as `<name>.local` (NetworkManager and avahi on the
 D-Bus, allowed for the group `netdev`), so several printers in one
-network get their own addresses.  The service page (`service.py`,
-panel `snapmaker_service`, opened by a wrench button the add-on adds to
-the action bar of the main menu) sets heater targets with
-`SET_HEATER_TEMPERATURE`, which does not block Klipper as `M109` does;
-the targets it shows are kept in the add-on settings (`service_targets`).
-Load and Unload are enabled within 3°C of the target and call the load
+network get their own addresses.  The home page (`service.py`)
+replaces KlipperScreen's main menu: the add-on returns it when
+KlipperScreen loads the panel `main_menu` (also under its former name
+`snapmaker_service`).  Three parts of fixed width (heaters, filament,
+controls) and below them Print, Move and Calibration; a gear button in
+the action bar (home page only) opens the More menu, which gets
+Temperature and Extrude (`snapmaker_j1.conf`), and the title bar of
+the home page hides its heaters and empties its title (WLAN and clock
+stay on the right).  The page sets heater
+targets with `SET_HEATER_TEMPERATURE`, which does not block Klipper as
+`M109` does; the targets it shows are kept in the add-on settings
+(`service_targets`); the nozzle diameter comes from `nozzle_diameter`
+of the extruder sections.  Disable Motors sends `M18` after the
+confirmation of KlipperScreen's move page; Light opens the light page.
+Load and Unload are enabled 5°C below the target and call the load
 macros with `SERVICE=1`; `SNAPMAKER_NOZZLE_SERVICE` moves both nozzles
 75mm in from their endstops (`SNAPMAKER_CAL_CLEAN_POSITION DISTANCE=`)
 with the bed at least 100mm below, `SNAPMAKER_DISTRIBUTE_GREASE` moves

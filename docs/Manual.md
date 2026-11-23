@@ -17,7 +17,7 @@ implemented, configuration) see [Snapmaker_J1.md](Snapmaker_J1.md).
 
 - [First start: connect the WLAN and calibrate](#first-start-connect-the-wlan-and-calibrate)
 - [The screen at a glance](#the-screen-at-a-glance)
-- [Service](#service)
+- [Home page](#home-page)
 - [Printing](#printing)
 - [Temperature](#temperature)
 - [Move](#move)
@@ -63,83 +63,87 @@ implemented, configuration) see [Snapmaker_J1.md](Snapmaker_J1.md).
 
 ## The screen at a glance
 
-![Main menu](manual/main-menu.png)
+![Home page](manual/main-menu.png)
 
-**Title bar.** The current temperatures of the left nozzle (0), the right
-nozzle (1) and the heated bed, the title of the page, the WLAN symbol and
-the clock.  The WLAN symbol shows the signal strength: the more bars are
-orange, the better the signal; without a connection the symbol is grey.
-Tap it to see the network, the signal, the IP address and the address
-of the [web interface](#web-interface); **WLAN** there opens the WLAN
-page.
+**Title bar.** The WLAN symbol and the clock; on the other pages also
+the current temperatures of the left nozzle (0), the right nozzle (1)
+and the heated bed, and the title of the page.  The WLAN symbol shows
+the signal strength: the more bars are orange, the better the signal;
+without a connection the symbol is grey.  Tap it to see the network,
+the signal, the IP address and the address of the
+[web interface](#web-interface); **WLAN** there opens the WLAN page.
 
 <img src="manual/wlan-info.png" width="420">
 
 **Action bar (left).**
 - **Back:** returns to the previous page.
-- **Circle:** returns to the main menu.
+- **Circle:** returns to the home page.
+- **Gear** (home page only): opens the menu ([More](#more)), with
+  Temperature and Extrude among its entries.
 - **Bell:** opens the notifications, for example messages from Klipper.
-- **Wrench** (main menu only): opens the [Service](#service) page.
 
 During a print the action bar also shows the emergency stop.  There is no
 shutdown button: the J1 is switched off with its power switch.
 
-**Main menu.**
-- **Left:** the heaters with their current temperatures and a graph of
-  the last minutes.  Tap a heater to set its temperature.
-- **Right:** the six main entries, in the order of a print: the print
-  itself first, then preparing it, the setup and More last.
-
-| Entry | Content |
-| --- | --- |
-| Print | files on the printer |
-| Temperature | heat, cool down, material presets |
-| Extrude | load, unload, extrude, filament sensors, pressure advance |
-| Move | home and move the axes, switch the active toolhead |
-| Calibration | the J1 calibration menu |
-| More | settings, fans, light, network, updates, console, system |
-
 The left nozzle is called **Left Nozzle** (T0, `extruder`) and the right
 one **Right Nozzle** (T1, `extruder1`).
 
-## Service
+## Home page
 
-![Service page](manual/service.png)
-
-The wrench button in the action bar of the main menu opens a page for
-service work: changing filament, cleaning the nozzles, lubricating the
-axes.  It heats without blocking the printer, so other commands still
-work while the nozzles heat up.
+The home page has everything for the daily work on one page: heating,
+changing filament, the service tasks and the way to a print.  It heats
+without blocking the printer, so other commands still work while the
+nozzles heat up.  During a print the screen shows the print page
+instead.
 
 **Heaters** (one row each):
-- **Tile** with the name and the current temperature; a tap sets the
-  target, as the target button does.
-- **Target:** tap to enter it.  The page keeps it, also after a restart:
-  220°C for the nozzles and 60°C for the bed by default.
-- **ON / OFF:** switches the heater to its target or off.  A heater that
-  is on has an orange frame; a new target applies at once.
-- **Load / Unload** (nozzles): available once the nozzle is on and
-  within 3°C of its target.  Load feeds 60 mm at 240 mm/min, Unload
-  pushes 5 mm and pulls 80 mm back.  The nozzle stays hot for another
-  run.  **Load Both / Unload Both** (beside the bed) move both
-  extruders at once; two single buttons pressed one after the other run
-  one after the other, as Klipper moves one thing at a time.  Loading
-  and unloading move both nozzles to the nozzle service position first,
-  so the filament falls on the build plate.
+- **Tile** with the name, the nozzle diameter, the current temperature
+  and below it the target (→ 230°C; while the heater is on the one it
+  really heats to, also when a print or the web interface set it).  Tap it to change the target: the
+  keypad shows the current one in grey, and the first digit typed
+  replaces it (whole degrees; ✓ alone keeps it).  Beside it the
+  material presets (PLA, ABS, PETG, FLEX) set it with one tap.  Back
+  closes the keypad.
+  The page keeps the target, also after a restart: 220°C for the
+  nozzles and 60°C for the bed by default.
+- **ON / OFF** (the right end of the tile): switches the heater to its
+  target or off.  A heater that is on has an orange frame around the
+  tile; a new target applies at once.
 
-**Bottom row:**
+**Filament** (T0, T1 and Both): **Load / Unload** are available (grey
+before; a tap then says what is missing) once the
+nozzle is on and at most 5°C below its target.  Load feeds 60 mm at
+240 mm/min, Unload pushes 5 mm and pulls 80 mm back.  The nozzle stays
+hot for another run.  **Both** moves both extruders at once; two single
+buttons pressed one after the other run one after the other, as Klipper
+moves one thing at a time.  Loading and unloading move both nozzles to
+the nozzle service position first, so the filament falls on the build
+plate.  Other lengths and speeds: [Extrude](#extrude-and-filament) in
+the menu.
+
+**Controls** (the two switches that turn something off are framed in
+red at the end):
+- **Home All:** homes all axes after a confirmation.
 - **Nozzle Service:** moves both nozzles 75 mm in from their parking
   positions, clear of the parts there and about 200 mm apart, with the
   bed at least 100 mm below them (homing first if needed).  The button
   then reads **Park Nozzles** and parks them again.  It does not switch
   any heater.
-- **Home All:** homes all axes.
 - **Distribute Grease:** after lubricating the rails and lead screws,
   moves both nozzles, the bed and the Z axis once over their travel
   (about a minute; down to 10 mm above the build plate).  The build
   plate has to be empty.  Tap again for another run.
-- **Fine Tuning:** opens [Fine Tuning](#limits-and-fine-tuning).
-- **All Off:** switches all heaters off.
+- **Light:** opens the [Light](#light) page: brightness of the case
+  light, dimming and the screen.  (Fine Tuning is on the print page and
+  in the menu.)
+- **Disable Motors:** switches the stepper motors off after a
+  confirmation, so the nozzles and the bed can be moved by hand.  Home
+  again before the next move.
+- **All Heaters Off:** switches all heaters off.
+
+**Bottom row:** **Print** (files on the printer), **Move** (home and
+move the axes, switch the active toolhead) and **Calibration** (the J1
+calibration menu).
 
 ## Printing
 
@@ -312,7 +316,7 @@ stock firmware.
 - **Load and Unload:** use the active nozzle at the print temperature
   (220 °C when it is colder than 170 °C), homing first if needed.
   Loading feeds at 240 mm/min, as the stock refill dialog.  Both
-  nozzles at once: [Service](#service) page.
+  nozzles at once: [home page](#home-page).
 - **Left Filament / Right Filament:** switch the filament sensors on or
   off.  The setting is kept after a restart.
 
@@ -1133,7 +1137,7 @@ Y 100**, not at X 150.  The J1 profiles of OrcaSlicer have it so
 | Printing | IDEX, duplication, mirror and backup mode from the file or chosen on the touch screen or in the browser, with the model moved in X; tool changes with parking; pause and resume with parking, priming and wiping |
 | Print start | nozzle diameter check against the installed nozzles, retraction warning above 2 mm |
 | Filament | motion sensors on both toolheads, runout and change dialog, load and unload beside the wipers |
-| Service | service page: heaters on/off with kept targets, load and unload (both at once), nozzle service position, homing, grease distribution |
+| Home page | heaters on/off with kept targets, load and unload (both at once), nozzle service position, homing, grease distribution, motors and heaters off, Print, Move, Calibration |
 | Power loss | recovery of the interrupted print, offered on the screen at the next start |
 | Calibration | bed leveling, Z offset, XY offset (assisted and manual), offset check, vibration compensation, PID auto tune, build plate thickness |
 | Results | stored at once, no restart or Save Config |

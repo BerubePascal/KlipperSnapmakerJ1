@@ -37,7 +37,10 @@ MENU_ORDER = {
     ("__main", ""): ("print", "temperature", "extrude", "move",
                      "snapmaker_calibration", "more"),
     # Printing, settings of the printer, tools and maintenance
-    ("__main", "more"): ("fine_tune", "limits", "fan", "snapmaker_pause",
+    # The home page shows Print, Move and Calibration; Temperature (the
+    # presets) and Extrude (any length) are here
+    ("__main", "more"): ("temperature", "extrude", "fine_tune", "limits",
+                         "fan", "snapmaker_pause",
                          "snapmaker_light", "snapmaker_datetime",
                          "snapmaker_network", "settings",
                          "macros", "console", "updater", "system"),
@@ -104,7 +107,9 @@ def init(screen):
             return light
         if panel == STOCK_PANEL:
             return stock
-        if panel == service.PANEL:
+        # The home page replaces KlipperScreen's main menu (its old name
+        # snapmaker_service still opens it)
+        if panel in (service.PANEL, "main_menu"):
             return service
         module = load_panel(panel)
         if panel == "job_status":
@@ -365,7 +370,7 @@ def init(screen):
     datetime_panel.apply_clock(screen)
     screen.snapmaker_wifi = wifi.WifiIcon(screen)
     screen.snapmaker_webcam = webcam.Webcam(screen)
-    screen.snapmaker_service = service.ServiceButton(screen)
+    screen.snapmaker_menu = service.MenuButton(screen)
     screen.snapmaker_case_light = light.CaseLight(screen)
     screen.snapmaker_update_notice = update_notice.UpdateNotice(screen)
     screen.snapmaker_addon_reload = update_notice.AddonReload(screen)
