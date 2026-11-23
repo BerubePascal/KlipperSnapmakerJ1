@@ -12,6 +12,9 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
 
 ## Unreleased
 
+- **Cancel from a pause:** a print cancelled while paused (for example
+  in Mainsail) no longer leaves the touch screen on the extrude page;
+  the print page with the result shows again.
 - **Cura files start with the left nozzle:** a print starts with the
   left toolhead active, as in the stock firmware.  Cura files heat T0
   but never select a tool; when the right toolhead was active from
@@ -39,8 +42,8 @@ released as git tags `vX.Y.Z`.  The update manager shows this version.
   nozzle.  Disable Motors and All Heaters Off are framed in red.  The
   gear in the action bar opens the menu, which now also holds
   Temperature (material presets) and Extrude (any length).
-- **Case light during a print:** More → Light has "Dim after during a
-  print" and "Dim to during a print", for example to keep the print lit
+- **Case light during a print:** More → Light has "Dim after (Printing)"
+  and "Dim to (Printing)", as the screen settings, for example to keep the print lit
   for the webcam.  The default "As without print" keeps the current
   behavior.  With the same time as the screen, the case light dims
   together with it.

@@ -160,6 +160,8 @@ def init(screen):
     # automatic switch to the job status (and back to the main menu when
     # the print ends) is suppressed while one of them runs
     screen.snapmaker_calibration_print = False
+    # The extrude panel was opened by a pause (closed when the print ends)
+    screen.snapmaker_pause_extrude = False
     state_printing = screen.state_printing
     state_ready = screen.state_ready
 
@@ -177,6 +179,13 @@ def init(screen):
             state_printing()
 
     def _state_ready(wait=True):
+        # A pause that ended the print (cancelled from the paused state, eg
+        # in Mainsail): the extrude panel of the pause goes, the print page
+        # with the result shows again
+        if (screen.snapmaker_pause_extrude and screen._cur_panels
+                and screen._cur_panels[-1] == "extrude"):
+            screen._menu_go_back()
+        screen.snapmaker_pause_extrude = False
         screen.snapmaker_case_light.klipper_ready()
         screen.snapmaker_update_notice.klipper_ready()
         screen.snapmaker_addon_reload.klipper_ready()
@@ -212,6 +221,7 @@ def init(screen):
                 # would put its extrude panel over it)
                 if not screen.snapmaker_calibration_print:
                     state_paused()
+                    screen.snapmaker_pause_extrude = True
                 return
             screen.state_printing()
             screen.show_panel(FILAMENT_PANEL, _("Filament"))
