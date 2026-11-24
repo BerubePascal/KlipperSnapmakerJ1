@@ -4,6 +4,30 @@ Changes made in this fork (BerubePascal/KlipperSnapmakerJ1) on top of the
 original repo (Nimrasol/KlipperSnapmakerJ1). The original's own history is in
 `CHANGELOG.md`, which this fork leaves untouched. Newest entries first.
 
+## 2026-11-23 — branch `dial-bed-mesh` (second commit)
+
+- **The bed mesh screen is split into a main page and a Settings page.**
+  - The main page is for the process only: a summary of the settings, the
+    saved mesh, and the buttons Settings, Restore Previous and Start.
+  - Every value is on the Settings page and is kept between sessions:
+    toolhead, grid (preset or custom X/Y points), edge margin, dial offset
+    X/Y, dial unit and direction, bed temperature, Z between points,
+    measuring Z, XY and Z speeds. Numbers are typed on a keypad and checked
+    against their range.
+- **Dial offset from the nozzle:** the toolhead moves so that the dial tip,
+  not the nozzle, is over each point and over the reference. Start refuses
+  a grid the carriage can't reach with that offset (parking limits of both
+  carriages).
+- **Readings in thousandths of an inch** (typed as 20 for 0.020"), or in mm.
+  They're converted to mm for the mesh and shown in the dial unit.
+- **Abort at any time**, also while homing, heating or moving: the bed
+  lowers, the carriages park, the heater goes off, and the mesh that was
+  active before is loaded again. Nothing is saved. **Restore Previous**
+  swaps the saved mesh with the one saved before it (the `.bak` file) and
+  restarts Klipper. Pressing it again swaps them back.
+- Files: `klipperscreen/snapmaker_j1/bed_mesh.py`, `tests/test_bed_mesh.py`,
+  `CHANGELOG-FORK.md`.
+
 ## 2026-11-23 — branch `dial-bed-mesh`
 
 - **New touch-screen screen: Calibration → Bed Mesh (Dial Indicator).** The

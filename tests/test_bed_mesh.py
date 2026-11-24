@@ -11,6 +11,7 @@ import configparser
 import importlib.util
 import os
 import sys
+import tempfile
 import types
 import unittest
 
@@ -96,7 +97,8 @@ class ProfileFileTest(unittest.TestCase):
         readings = {(ix, iy): 0.1 * ix for ix in range(3) for iy in range(2)}
         mesh = BM.build_mesh(xs, ys, readings, 1.)
         info = {"date": "2026-11-23 12:00", "tool": "left", "bed_temp": 60,
-                "sign": 1., "ref_start": 0., "ref_end": 0.01}
+                "sign": 1., "unit": "thou", "offset": (12., -30.),
+                "ref_start": 0., "ref_end": 1.}
         text = BM.mesh_file_text(xs, ys, mesh, readings, info)
         parser = configparser.ConfigParser()
         parser.read_string(text)
@@ -109,6 +111,58 @@ class ProfileFileTest(unittest.TestCase):
         rows = [r for r in section["points"].strip().splitlines()]
         self.assertEqual(len(rows), 2)
         self.assertEqual(len(rows[0].split(",")), 3)
+
+
+class UnitsAndReachTest(unittest.TestCase):
+    def test_thou_to_mm(self):
+        self.assertAlmostEqual(BM.to_mm(20, "thou"), 0.508)
+        self.assertAlmostEqual(BM.to_mm(0.5, "mm"), 0.5)
+        self.assertEqual(BM.format_value(0.508, "thou"), "+20.0")
+        self.assertEqual(BM.format_value(-0.1, "mm"), "-0.100")
+
+    def test_dial_offset_moves_the_nozzle(self):
+        self.assertEqual(BM.nozzle_position((100., 100.), (12., -30.)),
+                         (88., 130.))
+
+    def test_unreachable_points(self):
+        # Left carriage: nozzle X at most 312 while the right one is parked
+        points = [(300., 100.), (320., 100.)]
+        self.assertEqual(BM.unreachable(points, (0., 0.), 0), [(320., 100.)])
+        # A dial 20 mm right of the nozzle brings X320 back in reach
+        self.assertEqual(BM.unreachable(points, (20., 0.), 0), [])
+        # Dial 30 mm in front of the nozzle: the rear reference needs
+        # nozzle Y217, beyond the Y travel
+        self.assertEqual(BM.unreachable([BM.REFERENCE], (0., -30.), 0),
+                         [BM.REFERENCE])
+
+
+class FileTest(unittest.TestCase):
+    def test_write_keeps_backup_and_restore_swaps(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = os.path.join(folder, "mesh.cfg")
+            BM.write_mesh_file("first", path)
+            BM.write_mesh_file("second", path)
+            with open(path + ".bak") as f:
+                self.assertEqual(f.read(), "first")
+            BM.restore_previous_file(path)
+            with open(path) as f:
+                self.assertEqual(f.read(), "first")
+            with open(path + ".bak") as f:
+                self.assertEqual(f.read(), "second")
+            # Restoring again swaps back
+            BM.restore_previous_file(path)
+            with open(path) as f:
+                self.assertEqual(f.read(), "second")
+
+    def test_saved_mesh_info(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = os.path.join(folder, "mesh.cfg")
+            self.assertIsNone(BM.saved_mesh_info(path))
+            BM.write_mesh_file("# Measured: 2026-11-23 12:00\n"
+                               "# Toolhead: left, dial offset X+0 Y+0 mm\n",
+                               path)
+            self.assertEqual(BM.saved_mesh_info(path),
+                             "2026-11-23 12:00, left, dial offset X+0 Y+0 mm")
 
 
 if __name__ == "__main__":
