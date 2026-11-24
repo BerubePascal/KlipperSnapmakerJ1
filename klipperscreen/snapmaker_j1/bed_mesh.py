@@ -101,6 +101,9 @@ MM_PER_THOU = .0254
 BED_READY_MARGIN = 1.
 # Speed of the last approach to the measuring Z (mm/s)
 APPROACH_SPEED = 5.
+# Seconds between screen saver resets while measuring (the shortest
+# KlipperScreen blanking time is 60 s)
+AWAKE_INTERVAL = 30
 # Reference reading change at the end above which the result warns (mm)
 DRIFT_WARNING = .03
 # Klipper profile name and the file holding it (included by printer.cfg)
@@ -566,6 +569,7 @@ class Panel(ScreenPanel):
         self.mesh = None
         self.busy = False
         self.heat_timer = None
+        self.awake_timer = None
         # Keypad entry and the page that uses it; a "selected" entry (shown
         # highlighted) is replaced by the first key typed
         self.entry = ""
@@ -595,8 +599,43 @@ class Panel(ScreenPanel):
         self._styled(button, "snap-" + kind)
         if small:
             self._styled(button, "snap-small")
+        # Plain GTK buttons don't restart KlipperScreen's screen saver
+        # timer (only its own buttons do): every tap here counts as activity
+        button.connect("clicked", self._keep_awake)
         button.connect("clicked", callback, *args)
         return button
+
+    def _keep_awake(self, *args):
+        """Count as activity: screen blanking timer and case light dimming.
+
+        Restarts KlipperScreen's screen saver timer (as a touch on one of
+        its own buttons would) and the add-on's case light dim timer (which
+        also brings a dimmed light back).
+
+        Returns
+        -------
+        bool
+            Always True, so it can run as a repeating GLib timer.
+        """
+        screen = self._screen
+        reset = getattr(screen, "reset_screensaver_timeout", None)
+        if reset is None:
+            reset = getattr(getattr(screen, "screensaver", None),
+                            "reset_timeout", None)
+        if reset is not None:
+            try:
+                reset()
+            except TypeError:
+                # Some versions take the widget of the signal
+                reset(None)
+        elif not getattr(self, "_reset_missing_logged", False):
+            self._reset_missing_logged = True
+            logging.warning("Bed mesh: KlipperScreen has no screen saver"
+                            " reset; the screen may blank while measuring")
+        light = getattr(screen, "snapmaker_case_light", None)
+        if light is not None:
+            light.activity()
+        return True
 
     def _text(self, text, *classes, **kwargs):
         """A wrapping label."""
@@ -950,6 +989,11 @@ class Panel(ScreenPanel):
         self.ref_start = self.ref_end = None
         self.mesh = None
         self.running = True
+        # The screen (and a case light dimmed with it) stays on for the
+        # whole measurement, also while homing, heating and moving
+        if self.awake_timer is None:
+            self.awake_timer = GLib.timeout_add_seconds(
+                AWAKE_INTERVAL, self._keep_awake)
         self._show_run()
         self._set_status(_("Homing and heating the bed..."))
         # The mesh active now comes back when the measurement is aborted
@@ -1192,6 +1236,9 @@ class Panel(ScreenPanel):
         """
         self.running = False
         self.on_entry = None
+        if self.awake_timer is not None:
+            GLib.source_remove(self.awake_timer)
+            self.awake_timer = None
         if self.heat_timer is not None:
             GLib.source_remove(self.heat_timer)
             self.heat_timer = None

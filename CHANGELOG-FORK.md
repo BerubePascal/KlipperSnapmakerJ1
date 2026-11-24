@@ -4,6 +4,17 @@ Changes made in this fork (BerubePascal/KlipperSnapmakerJ1) on top of the
 original repo (Nimrasol/KlipperSnapmakerJ1). The original's own history is in
 `CHANGELOG.md`, which this fork leaves untouched. Newest entries first.
 
+## 2026-11-23 — branch `bed-mesh-keep-awake`
+
+- **The screen and the case light stay on while measuring the bed mesh.**
+  The screen went dark during a measurement (and the case light with it,
+  as it follows the screen), even while readings were being typed:
+  KlipperScreen only counts taps on its own button type as activity, and
+  the bed mesh screen uses plain GTK buttons. Now every tap on the bed mesh
+  screen counts. During a measurement, homing, heating and moving count too
+  (every 30 s). Normal blanking resumes when it ends or is aborted.
+- Files: `klipperscreen/snapmaker_j1/bed_mesh.py`, `CHANGELOG-FORK.md`.
+
 ## 2026-11-23 — branch `fix-menu-scroll`
 
 - **The calibration menu list scrolls.** The added "Bed Mesh (Dial
