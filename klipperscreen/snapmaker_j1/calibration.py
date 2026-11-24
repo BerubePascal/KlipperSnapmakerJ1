@@ -389,7 +389,14 @@ class Panel(ScreenPanel):
             button.connect("clicked", self._select, i)
             sections.pack_start(button, False, False, 0)
             self.section_buttons.append(button)
-        box.pack_start(sections, False, False, 0)
+        # ! LOCAL CHANGE (fork): the list scrolls (touch drag), since the
+        # ! added "Bed Mesh" entry makes it taller than the screen
+        scroll = self._gtk.ScrolledWindow()
+        scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        scroll.set_hexpand(False)
+        scroll.set_size_request(self._dp(140), -1)
+        scroll.add(sections)
+        box.pack_start(scroll, False, False, 0)
         self.detail = Gtk.Box(orientation=Gtk.Orientation.VERTICAL,
                               hexpand=True, vexpand=True)
         self._styled(self.detail, "snap-card")

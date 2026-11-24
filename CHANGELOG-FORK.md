@@ -4,6 +4,19 @@ Changes made in this fork (BerubePascal/KlipperSnapmakerJ1) on top of the
 original repo (Nimrasol/KlipperSnapmakerJ1). The original's own history is in
 `CHANGELOG.md`, which this fork leaves untouched. Newest entries first.
 
+## 2026-11-23 — branch `fix-menu-scroll`
+
+- **The calibration menu list scrolls.** The added "Bed Mesh (Dial
+  Indicator)" entry made the list taller than the screen: the last entry
+  ran past the bottom edge, and the list couldn't scroll. It now sits in
+  KlipperScreen's touch scroll area (drag with a finger).
+- **The bed mesh Settings page and result table use the same touch scroll
+  areas** (plain GTK scroll areas don't follow a finger drag). The result
+  table also scrolls sideways for wide grids.
+- Files: `klipperscreen/snapmaker_j1/calibration.py` (marked
+  `! LOCAL CHANGE`), `klipperscreen/snapmaker_j1/bed_mesh.py`,
+  `CHANGELOG-FORK.md`.
+
 ## 2026-11-23 — branch `bed-mesh-entry`
 
 - **Faster typing on the bed mesh keypad.**

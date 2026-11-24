@@ -843,7 +843,7 @@ class Panel(ScreenPanel):
                 button.set_sensitive(custom)
             row.pack_start(button, False, False, 0)
             rows.pack_start(row, False, False, 0)
-        scroll = Gtk.ScrolledWindow(vexpand=True, hexpand=True)
+        scroll = self._gtk.ScrolledWindow()  # touch drag scrolling
         scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         scroll.add(rows)
         box.pack_start(scroll, True, True, 0)
@@ -1272,7 +1272,9 @@ class Panel(ScreenPanel):
                 table.attach(self._text(format_value(self.mesh[iy][ix],
                                                      unit)),
                              ix + 1, row + 1, 1, 1)
-        scroll = Gtk.ScrolledWindow(vexpand=True, hexpand=True)
+        scroll = self._gtk.ScrolledWindow()  # touch drag scrolling
+        # Large grids are wider than the screen: scroll both ways
+        scroll.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
         scroll.add(table)
         box.pack_start(scroll, True, True, 0)
         bar = self._bar()
