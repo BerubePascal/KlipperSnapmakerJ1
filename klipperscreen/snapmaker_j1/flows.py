@@ -342,5 +342,15 @@ def build():
                      " calibrations measure the bare bed; the nozzles"
                      " start printing this much higher.\n\nSet it when"
                      " you use another build plate."),)},
+        # ! LOCAL CHANGE (fork): opens the dial indicator bed mesh screen
+        # ! (bed_mesh.py) instead of running a flow
+        {'key': 'bed_mesh', 'title': _("Bed Mesh (Dial Indicator)"),
+         'assist': False, 'setting': 'bed_mesh', 'flows': (),
+         'images': ('gif_calibration_j1_heated_bed_leveing_auxiliary_content',),
+         'texts': (_("Measure the flatness of the bed with a dial indicator"
+                     " mounted in place of a hotend, point by point on a"
+                     " grid, and save it as the bed mesh used by"
+                     " prints.\n\nRemove the hotend of the toolhead that"
+                     " carries the indicator: the bed comes up to Z=0."),)},
     ]
     return menu, flows

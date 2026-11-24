@@ -20,6 +20,8 @@ from ks_includes.screen_panel import ScreenPanel
 from . import (calibration, chooser, datetime_panel, filament, hostname,
                light, mcu_update, pause, print_mode, service, stock, style,
                update_channel, update_notice, web_panel, webcam, wifi)
+# ! LOCAL CHANGE (fork): dial indicator bed mesh screen (bed_mesh.py)
+from . import bed_mesh
 
 # Install as KlipperScreen/addons/snapmaker_j1 (enable_addons: True) and
 # add a menu entry with "panel: snapmaker_calibration".
@@ -107,6 +109,9 @@ def init(screen):
             return light
         if panel == STOCK_PANEL:
             return stock
+        # ! LOCAL CHANGE (fork): dial indicator bed mesh screen
+        if panel == bed_mesh.PANEL:
+            return bed_mesh
         # The home page replaces KlipperScreen's main menu (its old name
         # snapmaker_service still opens it)
         if panel in (service.PANEL, "main_menu"):

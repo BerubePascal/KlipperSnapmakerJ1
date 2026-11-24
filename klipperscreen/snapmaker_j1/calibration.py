@@ -439,6 +439,16 @@ class Panel(ScreenPanel):
             self.detail.pack_start(bottom, False, False, 0)
             self.detail.show_all()
             return
+        # ! LOCAL CHANGE (fork): Start opens the bed mesh screen
+        if item.get("setting") == "bed_mesh":
+            start = self._bar_button(self._button(_("Start"), "primary"),
+                                     "end")
+            start.connect("clicked", lambda w: self._screen.show_panel(
+                "snapmaker_bed_mesh", _("Bed Mesh")))
+            bottom.pack_end(start, False, False, 0)
+            self.detail.pack_start(bottom, False, False, 0)
+            self.detail.show_all()
+            return
         if item["assist"]:
             switch = Gtk.Switch(active=self.assist[item["key"]],
                                 valign=Gtk.Align.CENTER, can_focus=False)
