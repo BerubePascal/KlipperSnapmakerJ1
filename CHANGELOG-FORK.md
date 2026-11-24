@@ -4,6 +4,16 @@ Changes made in this fork (BerubePascal/KlipperSnapmakerJ1) on top of the
 original repo (Nimrasol/KlipperSnapmakerJ1). The original's own history is in
 `CHANGELOG.md`, which this fork leaves untouched. Newest entries first.
 
+## 2026-11-23 — branch `bed-mesh-entry`
+
+- **Faster typing on the bed mesh keypad.**
+  - When a number opens in Settings, its current value is highlighted
+    (selected): the first key replaces it, and backspace clears it.
+  - During the measurement, each point starts at 0, highlighted the same
+    way, so Next is active at once for a reading of 0. Going back to a point
+    shows the reading typed there before, also highlighted.
+- Files: `klipperscreen/snapmaker_j1/bed_mesh.py`, `CHANGELOG-FORK.md`.
+
 ## 2026-11-23 — branch `dial-bed-mesh` (second commit)
 
 - **The bed mesh screen is split into a main page and a Settings page.**

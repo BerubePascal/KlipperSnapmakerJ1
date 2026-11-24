@@ -31,6 +31,9 @@ screen.
 - Each grid point (zigzag from the front-left corner): the bed lowers to the
   Z between points, the toolhead moves so that the dial tip is over the
   point, the bed comes back to the measuring Z. Type the reading, Next.
+  The entry starts at 0 (or the reading typed before at that point),
+  highlighted: the first key replaces it, so Next works at once for 0.
+  Settings numbers open the same way, with the current value highlighted.
   Previous goes back one point. Abort (or Back) stops at any time: the bed
   lowers, the carriages park, the bed heater switches off and the mesh that
   was active before is loaded again; nothing is saved.
@@ -563,8 +566,10 @@ class Panel(ScreenPanel):
         self.mesh = None
         self.busy = False
         self.heat_timer = None
-        # Keypad entry and the page that uses it
+        # Keypad entry and the page that uses it; a "selected" entry (shown
+        # highlighted) is replaced by the first key typed
         self.entry = ""
+        self.selected = False
         self.on_entry = None
         self.number_key = None
         self.w = {}
@@ -676,9 +681,20 @@ class Panel(ScreenPanel):
         return grid
 
     def _key(self, widget, key):
-        """Digits, minus (first character only), point, backspace."""
+        """Digits, minus (first character only), point, backspace.
+
+        While the entry is selected (just opened, showing the current value
+        highlighted), the first key replaces it: a digit, minus or point
+        starts a new number, backspace clears it.
+        """
         if self.on_entry is None or self.busy:
             return
+        if self.selected:
+            self.selected = False
+            self.entry = ""
+            if key == BACKSPACE:
+                self.on_entry()
+                return
         if key == BACKSPACE:
             self.entry = self.entry[:-1]
         elif len(self.entry) >= MAX_ENTRY:
@@ -701,6 +717,15 @@ class Panel(ScreenPanel):
             return float(self.entry)
         except ValueError:
             return None
+
+    def _entry_markup(self):
+        """The entry for a label (Pango markup): highlighted while selected,
+        an underscore when empty."""
+        text = GLib.markup_escape_text(self.entry or "_")
+        if self.selected:
+            return ('<span background="#ff8a00" foreground="#1a1c28">'
+                    '&#160;%s&#160;</span>' % text)
+        return text
 
     # Main page
     def _summary(self):
@@ -866,6 +891,8 @@ class Panel(ScreenPanel):
         box.pack_end(bar, False, False, 0)
         value = self.values[key]
         self.entry = "%d" % value if integer else "%g" % value
+        # The current value is selected: typing replaces it
+        self.selected = True
         self.on_entry = self._number_changed
         self._set_page("number", box)
         self._number_changed()
@@ -882,7 +909,8 @@ class Panel(ScreenPanel):
 
     def _number_changed(self):
         unit = self._setting(self.number_key)[2]
-        self.w["entry"].set_label("%s %s" % (self.entry or "_", unit))
+        self.w["entry"].set_markup("%s %s" % (
+            self._entry_markup(), GLib.markup_escape_text(unit)))
         self.w["ok"].set_sensitive(self._number_valid() is not None)
 
     def _number_ok(self, widget):
@@ -1094,18 +1122,22 @@ class Panel(ScreenPanel):
                 _("Dial tip at X %g, Y %g (column %d, row %d from the"
                   " front). Enter the reading in %s.") % (
                     self.xs[ix], self.ys[iy], ix + 1, iy + 1, unit))
-        self.entry = "" if value is None else ("%g" % value)
+        # 0 by default (Next is active at once), or the reading typed before
+        # at this position; either way selected, so typing replaces it
+        self.entry = "0" if value is None else ("%g" % value)
+        self.selected = True
         self.on_entry = self._reading_changed
         self._reading_changed()
 
     def _reading_changed(self):
         unit = self.values["unit"]
-        text = _("Reading: %s %s") % (self.entry or "_", unit_name(unit))
+        text = GLib.markup_escape_text(_("Reading: %s %s")) % (
+            self._entry_markup(), GLib.markup_escape_text(unit_name(unit)))
         value = self._entry_value()
         if unit == "thou" and value is not None:
             text += "  (%.4f in, %.3f mm)" % (value / 1000.,
                                                to_mm(value, unit))
-        self.w["entry"].set_label(text)
+        self.w["entry"].set_markup(text)
         self._update_buttons()
 
     def _update_buttons(self):
